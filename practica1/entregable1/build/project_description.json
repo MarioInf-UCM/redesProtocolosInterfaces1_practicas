@@ -1,7 +1,7 @@
 {
     "version":            "1",
     "project_name":       "hello_world",
-    "project_version":    "ded4d7d-dirty",
+    "project_version":    "a662b74-dirty",
     "project_path":       "/home/mario/Documentos/universidad/RedesProtocolosInterfaces1/redesProtocolosInterfaces1_practicas/practica1/entregable1",
     "idf_path":           "/home/mario/esp/esp-idf",
     "build_dir":          "/home/mario/Documentos/universidad/RedesProtocolosInterfaces1/redesProtocolosInterfaces1_practicas/practica1/entregable1/build",
