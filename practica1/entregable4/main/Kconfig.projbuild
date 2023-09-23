@@ -1,0 +1,19 @@
+menu "Example Configuration"
+
+    orsource "$IDF_PATH/examples/common_components/env_caps/$IDF_TARGET/Kconfig.env_caps"
+
+    config TIME_WAIT_TASK1
+        int "Tiempo de espera para la tarea 1"
+        range 1 99
+        default 4
+        help 
+            Define el tiempo en segundos que deberá esperar la tarea 1 para volver a ejecutarse.
+
+    config TIME_WAIT_TASK2
+        int "Tiempo de espera para la tarea 2"
+        range 1 99
+        default 7
+        help 
+            Define el tiempo en segundos que deberá esperar la tarea 2 para volver a ejecutarse.
+
+endmenu
