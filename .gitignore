@@ -30,3 +30,13 @@
 *.exe
 *.out
 *.app
+
+# Carpeta build de cada entregable
+practica1/*/build
+
+# Ficheros .vscode
+.vscode
+practica1/*/.vscode/settings.json
+sdkconfig
+
+
