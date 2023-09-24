@@ -39,33 +39,8 @@ void app_main(void){
         printf("esp_efuse_mac_get_default: %d\n", mac);
         checkError(errReturn);
 
-
-
-
-
     }
 
-
-    //chip_info.features;
-
-/*     uint8_t macWIFI;
-    read_mac(&macWIFI, ESP_MAC_WIFI_STA);
-    printf("\nPEPEPE %s", macWIFI);
- */
-
-
-/*     unsigned major_rev = chip_info.revision / 100;
-    unsigned minor_rev = chip_info.revision % 100;
-    printf("silicon revision v%d.%d, ", major_rev, minor_rev);
-    if(esp_flash_get_size(NULL, &flash_size) != ESP_OK) {
-        printf("Get flash size failed");
-        return;
-    }
-
-    printf("%" PRIu32 "MB %s flash\n", flash_size / (uint32_t)(1024 * 1024),
-           (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
-    printf("Minimum free heap size: %" PRIu32 " bytes\n", esp_get_minimum_free_heap_size());
- */
     printf("\nRestarting in %d seconds...: ", TIME_WAIT);
     for (int i = TIME_WAIT; i >= 0; i--) {
         printf("%d ", i);
