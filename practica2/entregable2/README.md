@@ -65,14 +65,39 @@ I (969) wifi softAP: wifi_init_softap finished. SSID:RPI1_test password:test1234
 I (969) main_task: Returned from app_main()
 ```
 
-Una vez que se ha llevado a cabo la inicialización del sistema como Punto de acceso y hemos comprobado la salida, pasaremos a conectar un dispositivo al mismo y observar loq ue este nos devuelve.
+Una vez que se ha llevado a cabo la inicialización del sistema como Punto de acceso y hemos comprobado la salida, pasaremos a conectar un dispositivo al mismo y observar lo que este nos devuelve. Tener en cuenta que esta salida se realiza dentro de la manejadora que trata el evento **WIFI_EVENT_AP_STACONNECTED**.
 
-En este caso podemos observar como se ha solicitado la conexión desde una nueva estación con la dirección MAC DE:23:9C:51:10:93. Po otra parte vemos como el sistema le ha asignado la dirección IP 192.168.4.2
+En este caso podemos observar como se ha solicitado la conexión desde una nueva estación a nuestro Punto de Acceso con dirección MAC DE:23:9C:51:10:93. Por otra parte vemos como el sistema ha asignado a esta nueva estación la dirección IP 192.168.4.2
 
 ```
-I (80969) wifi:new:<1,0>, old:<1,1>, ap:<1,1>, sta:<255,255>, prof:1
-I (80969) wifi:station: de:23:9c:51:10:93 join, AID=1, bgn, 20
-I (80999) wifi softAP: station de:23:9c:51:10:93 join, AID=1
-I (81259) esp_netif_lwip: DHCP server assigned IP to a client, IP is: 192.168.4.2
-I (81469) wifi:<ba-add>idx:2 (ifx:1, de:23:9c:51:10:93), tid:0, ssn:16, winSize:64
+I (20319) wifi:new:<1,1>, old:<1,1>, ap:<1,1>, sta:<255,255>, prof:1
+I (20319) wifi:station: f8:94:c2:b9:6b:08 join, AID=1, bgn, 40U
+I (20359) wifi softAP: station f8:94:c2:b9:6b:08 join, AID=1
+I (20459) esp_netif_lwip: DHCP server assigned IP to a client, IP is: 192.168.4.2
+I (20679) wifi:<ba-add>idx:2 (ifx:1, f8:94:c2:b9:6b:08), tid:0, ssn:15, winSize:64
 ```
+
+Para finalizar vamos a llevar a cabo la desconexión de la estación para obtener la siguiente salida, donde vemos que esta ha sido detectada por el Punto de Acceso. Tener en cuenta que esta salida se realiza dentro de la manejadora que trata el evento **WIFI_EVENT_AP_STADISCONNECTED**.
+
+```
+I (54499) wifi:station: f8:94:c2:b9:6b:08 leave, AID = 1, bss_flags is 8391747, bss:0x3ffb91f0
+I (54499) wifi:new:<1,0>, old:<1,1>, ap:<1,1>, sta:<255,255>, prof:1
+I (54509) wifi:<ba-del>idx:2, tid:0
+I (54509) wifi softAP: station f8:94:c2:b9:6b:08 leave, AID=1
+```
+
+
+## Configuración de eventos
+
+En el ejemplo del cual parte el entregable se realiza el manejo únicamente de dos eventos:
+ - WIFI_EVENT_AP_STACONNECTED: Lanzado cuando una estación lleva a cabo una conexión con el Punto de Acceso.
+ 
+ - WIFI_EVENT_AP_STADISCONNECTED: Lanzado cuando una estación se desconecta del Punto de acceso. 
+
+ Ya hemos visto la salida que producen ambos eventos en el apartado anterior, donde hemos llevado a cabo la conexión y desconexión de una estación, por lo que no volveremos a visualizarla ahora.
+ 
+ Sin embargo, examinando todos los posibles eventos lanzados por el sistema WIFI configurado como Punto de Acceso y filtrando aquellos que sean relevantes, observamos que WIFI_EVENT_AP_START y WIFI_EVENT_AP_STOP no se encuentran tratados correctamente. Debido a esto, pasaremos a implementar manejadores espedificas para cada uno de ellos.
+
+ ### Tratando el evento WIFI_EVENT_AP_START
+
+ ### Tratando el evento WIFI_EVENT_AP_STOP

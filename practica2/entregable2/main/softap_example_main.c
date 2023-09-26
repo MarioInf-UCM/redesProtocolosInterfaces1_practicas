@@ -30,18 +30,42 @@
 
 static const char *TAG = "wifi softAP";
 
-static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+/***************************************************
+* FUNCIONES PARA EL TRATAMIENDO DE EVENTOS - INICIO
+****************************************************/
+
+static void wifi_event_handler_start(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
-    if (event_id == WIFI_EVENT_AP_STACONNECTED) {
-        wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-        ESP_LOGI(TAG, "station "MACSTR" join, AID=%d",
-                 MAC2STR(event->mac), event->aid);
-    } else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
-        wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
-        ESP_LOGI(TAG, "station "MACSTR" leave, AID=%d",
-                 MAC2STR(event->mac), event->aid);
-    }
+    wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
+    //ESP_LOGI(TAG, "station "MACSTR" join, AID=%d",MAC2STR(event->mac), event->aid);
 }
+
+
+static void wifi_event_handler_stop(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+{
+    wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
+    //ESP_LOGI(TAG, "station "MACSTR" join, AID=%d",MAC2STR(event->mac), event->aid);
+}
+
+
+static void wifi_event_handler_staconnected(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+{
+    wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
+    ESP_LOGI(TAG, "station "MACSTR" join, AID=%d",MAC2STR(event->mac), event->aid);
+}
+
+
+static void wifi_event_handler_stadisconnected(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+{
+    wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
+    ESP_LOGI(TAG, "station "MACSTR" leave, AID=%d",MAC2STR(event->mac), event->aid);
+}
+
+
+/***************************************************
+* FUNCIONES PARA EL TRATAMIENDO DE EVENTOS - FIN
+****************************************************/
+
 
 void wifi_init_softap(void)
 {
@@ -56,8 +80,26 @@ void wifi_init_softap(void)
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));                   //Inicializamos la tarea que gestionará la conexión WIFI
 
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
-                                                        ESP_EVENT_ANY_ID,
-                                                        &wifi_event_handler,
+                                                        WIFI_EVENT_AP_STACONNECTED,
+                                                        &wifi_event_handler_start,
+                                                        NULL,
+                                                        NULL));
+
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
+                                                        WIFI_EVENT_AP_STACONNECTED,
+                                                        &wifi_event_handler_stop,
+                                                        NULL,
+                                                        NULL));
+
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
+                                                        WIFI_EVENT_AP_STACONNECTED,
+                                                        &wifi_event_handler_staconnected,
+                                                        NULL,
+                                                        NULL));
+
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
+                                                        WIFI_EVENT_AP_STADISCONNECTED,
+                                                        &wifi_event_handler_stadisconnected,
                                                         NULL,
                                                         NULL));
 
