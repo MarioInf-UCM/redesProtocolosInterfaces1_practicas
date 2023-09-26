@@ -36,17 +36,16 @@ static const char *TAG = "wifi softAP";
 
 static void wifi_event_handler_start(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
-    wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-    //ESP_LOGI(TAG, "station "MACSTR" join, AID=%d",MAC2STR(event->mac), event->aid);
+    ESP_LOGI(TAG, "Driver WIFI iniciado correctamente.");
 }
 
 
 static void wifi_event_handler_stop(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
-    wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-    //ESP_LOGI(TAG, "station "MACSTR" join, AID=%d",MAC2STR(event->mac), event->aid);
+    ESP_LOGI(TAG, "Detectada parada del driver WIFI. Cerrando el driver WIFI.");
+    ESP_ERROR_CHECK(esp_wifi_deinit());
+    ESP_LOGI(TAG, "Driver WIFI cerrado con exito.");
 }
-
 
 static void wifi_event_handler_staconnected(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
@@ -80,13 +79,13 @@ void wifi_init_softap(void)
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));                   //Inicializamos la tarea que gestionará la conexión WIFI
 
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
-                                                        WIFI_EVENT_AP_STACONNECTED,
+                                                        WIFI_EVENT_AP_START,
                                                         &wifi_event_handler_start,
                                                         NULL,
                                                         NULL));
 
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
-                                                        WIFI_EVENT_AP_STACONNECTED,
+                                                        WIFI_EVENT_AP_STOP,
                                                         &wifi_event_handler_stop,
                                                         NULL,
                                                         NULL));
@@ -154,4 +153,15 @@ void app_main(void)
 
     ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
     wifi_init_softap();
+
+
+    ESP_LOGI(TAG, "**CIERRE DEL PRINTO DE ACCESO EN %d SEGUNDOS", CONFIG_ESP_TIME_CLOSE_WIFI) ;
+    for (int i = CONFIG_ESP_TIME_CLOSE_WIFI; i >= 0; i--)
+    {
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+    ESP_LOGI(TAG, "**TIEMPO FINALIZARO, CERRANDO DRIVER WIFI") ;
+    esp_wifi_disconnect();
+    esp_wifi_stop();
+
 }

@@ -23,4 +23,10 @@ menu "Example Configuration"
         default 4
         help
             Max number of the STA connects to AP.
+
+    config ESP_TIME_CLOSE_WIFI
+        int "Time to close the WIFI Access Point"
+        range 10 99
+        default 30
+
 endmenu

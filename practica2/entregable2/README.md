@@ -2,7 +2,13 @@
 
 En el presente entregable se trabajará con el uso de la biblioteca WIFI proporcionada para la placa STM32 en su modo para trabajar como Punto de Acceso.
 
-## Ejemplo de conexión
+## Tarea - Ejemplo de conexión
+
+```
+Tarea
+
+Analiza el ejemplo softAP, compílalo y flashealo. Estudia el tratamiento de eventos que realiza, y cómo estos son emitidos para casos reales. Para ello, conecta distintos clientes (stations), bien sean ESP32 o cualquier otro dispositivo, y analiza los eventos generados y su respuesta.
+```
 
 Para comprobar que la placa funciona correctamente como Punto de Acceso, antes de realizar la conexión con otro dispositivo, ejecutaremos el código entregado y examinaremos su salida.
 
@@ -87,17 +93,116 @@ I (54509) wifi softAP: station f8:94:c2:b9:6b:08 leave, AID=1
 ```
 
 
-## Configuración de eventos
+## Entregable 2 - Configuración de eventos
+```
+Entregable 2
+
+Revisa el tratamiento de eventos del código anterior, añade el tratamiento de los eventos que falten por tratar. Añade en tu código un comentario explicando el código añadido.
+```
 
 En el ejemplo del cual parte el entregable se realiza el manejo únicamente de dos eventos:
  - WIFI_EVENT_AP_STACONNECTED: Lanzado cuando una estación lleva a cabo una conexión con el Punto de Acceso.
  
  - WIFI_EVENT_AP_STADISCONNECTED: Lanzado cuando una estación se desconecta del Punto de acceso. 
 
- Ya hemos visto la salida que producen ambos eventos en el apartado anterior, donde hemos llevado a cabo la conexión y desconexión de una estación, por lo que no volveremos a visualizarla ahora.
- 
- Sin embargo, examinando todos los posibles eventos lanzados por el sistema WIFI configurado como Punto de Acceso y filtrando aquellos que sean relevantes, observamos que WIFI_EVENT_AP_START y WIFI_EVENT_AP_STOP no se encuentran tratados correctamente. Debido a esto, pasaremos a implementar manejadores espedificas para cada uno de ellos.
+Ya hemos visto la salida que producen ambos eventos en el apartado anterior, donde hemos llevado a cabo la conexión y desconexión de una estación, por lo que no volveremos a visualizarla ahora.
 
- ### Tratando el evento WIFI_EVENT_AP_START
+Sin embargo, examinando todos los posibles eventos lanzados por el sistema WIFI configurado como Punto de Acceso y filtrando aquellos que sean relevantes, observamos que WIFI_EVENT_AP_START y WIFI_EVENT_AP_STOP no se encuentran tratados correctamente. Debido a esto, pasaremos a implementar manejadores espedificas para cada uno de ellos.
 
- ### Tratando el evento WIFI_EVENT_AP_STOP
+### Tratando el evento WIFI_EVENT_AP_START
+
+Este evento es enviado atomáticamente al ejecutar la funcion esp_wifi_start(), y para controlarlo vamos a enlazar una función manejadora que imprimirá en pantalla que se ha llevado correctamente el arranque del driver Wifi.
+
+
+En el siguiente cuadro podemos ver la función manejadora en cuestión:
+```
+static void wifi_event_handler_stop(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+{
+    wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
+    ESP_ERROR_CHECK(esp_wifi_deinit());
+    ESP_LOGI(TAG, "Detectada parada del driver WIFI. Cierre ordenado realizado con exito. | "
+                MACSTR" join, AID=%d",MAC2STR(event->mac), event->aid);
+}
+```
+
+En el siguiente cuadro podemos ver el enlace de la función manejadora:
+```
+ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
+                                                    WIFI_EVENT_AP_STOP,
+                                                    &wifi_event_handler_stop,
+                                                    NULL,
+                                                    NULL));
+```
+
+En el siguiente cuadro tenemos la salida obtenida tras ejecutar el programa. Podmeos ver como después de terminar la configuración obtenemos el mensaje enviado desde la manejadora enlazada.
+```
+*
+**CONFIGURACIÓN WIFI - FIN
+
+I (940) esp_netif_lwip: DHCP server started on interface WIFI_AP_DEF with IP: 192.168.4.1
+I (950) wifi softAP: Driver WIFI iniciado correctamente.
+I (960) wifi softAP: wifi_init_softap finished. SSID:RPI1_test password:test1234 channel:1
+I (970) main_task: Returned from app_main()
+```
+
+### Tratando el evento 
+
+Este evento es enviado atomáticamente al ejecutar la funcion esp_wifi_stop() o en el caso de que se produzca un cierre repentino del driver WIFI. Igual que ne el caso anterior, vamos a enlazar una función manejadora que, en este caso, lleve a cabo un cierre ordenado de los recursos asignados al driver WIFI.
+
+Antes de nada, para poder hacer esto utilizaremos un temporizador que tras pasados un número determinado de segundos cierre el driver WIFI. Esta será definida como una variable de confuguración accesible desde 'menuconfig', cuya definición dentro del fichero **Kconfig.projbuild** es:
+
+```
+    config ESP_TIME_CLOSE_WIFI
+        int "Time to close the WIFI Access Point"
+        range 10 99
+        default 30
+```
+
+Por otra parte, el contador de segundos y la llamada a la función esp_wofo_stop se llevan a cabo al final de la función app_main(). En el siguiente cuadro podemos ver el fracmente incluido en la misma:
+
+```
+ESP_LOGI(TAG, "**CIERRE DEL PRINTO DE ACCESO EN %d SEGUNDOS", CONFIG_ESP_TIME_CLOSE_WIFI) ;
+for (int i = CONFIG_ESP_TIME_CLOSE_WIFI; i >= 0; i--)
+{
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+}
+ESP_LOGI(TAG, "**TIEMPO FINALIZARO, CERRANDO DRIVER WIFI") ;
+esp_wifi_disconnect();
+esp_wifi_stop();
+```
+
+Por otra parte, en el siguiente cuadro podemos ver la función manejadora en cuestión:
+
+```
+static void wifi_event_handler_stop(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+{
+    ESP_LOGI(TAG, "Detectada parada del driver WIFI. Cerrando el driver WIFI.");
+    ESP_ERROR_CHECK(esp_wifi_deinit());
+    ESP_LOGI(TAG, "Driver WIFI cerrado con exito.");
+}
+```
+
+En el siguiente cuadro podemos ver el enlace de la función manejadora:
+
+```
+ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
+                                                    WIFI_EVENT_AP_START,
+                                                    &wifi_event_handler_start,
+                                                    NULL,
+                                                    NULL));
+```
+
+Una vez implementado todo lo anterior, procedemos a la ajecución del dentregable y esperamos el tiempo necesario para que se lleve a cabo el cierre del driver WIFI. Obtenemos la siguiente salida
+
+```
+I (950) wifi softAP: Driver WIFI iniciado correctamente.
+I (960) wifi softAP: wifi_init_softap finished. SSID:RPI1_test password:test1234 channel:1
+I (970) wifi softAP: **CIERRE DEL PRINTO DE ACCESO EN 30 SEGUNDOS
+I (31970) wifi softAP: **TIEMPO FINALIZARO, CERRANDO DRIVER WIFI
+E (31970) wifi:NAN WiFi stop
+I (31970) wifi:flush txq
+I (31970) wifi:stop sw txq
+I (31970) wifi:lmac stop hw txq
+E (31970) wifi_init: Failed to deinit Wi-Fi driver (0x3014)
+ESP_ERROR_CHECK failed: esp_err_t 0x3014 (ESP_ERR_WIFI_STOP_STATE) at 0x400d5c63
+```
