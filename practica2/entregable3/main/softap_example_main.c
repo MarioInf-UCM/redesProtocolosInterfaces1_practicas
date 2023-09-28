@@ -134,7 +134,7 @@ static void wifi_event_handler_stadisconnected(void* arg, esp_event_base_t event
     ESP_LOGI(TAG, "station "MACSTR" leave, AID=%d",MAC2STR(event->mac), event->aid);
 }
 
-
+/*  */
 /***************************************************
 * FUNCIONES PARA EL TRATAMIENDO DE EVENTOS - FIN
 ****************************************************/
