@@ -1,7 +1,7 @@
 {
     "version":            "1",
     "project_name":       "wifi_softAP",
-    "project_version":    "6c035a1-dirty",
+    "project_version":    "b8a8a46-dirty",
     "project_path":       "/home/mario/Documentos/universidad/RedesProtocolosInterfaces1/redesProtocolosInterfaces1_practicas/practica2/ejemplos/softAP",
     "idf_path":           "/home/mario/esp/esp-idf",
     "build_dir":          "/home/mario/Documentos/universidad/RedesProtocolosInterfaces1/redesProtocolosInterfaces1_practicas/practica2/ejemplos/softAP/build",

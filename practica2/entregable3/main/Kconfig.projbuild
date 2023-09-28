@@ -2,13 +2,13 @@ menu "Example Configuration - Station Mode"
 
     config ESP_WIFI_SSID
         string "WiFi SSID"
-        default "myssid"
+        default "RPI1_test"
         help
             SSID (network name) for the example to connect to.
 
     config ESP_WIFI_PASSWORD
         string "WiFi Password"
-        default "mypassword"
+        default "test1234"
         help
             WiFi password (WPA or WPA2) for the example to use.
 
@@ -70,13 +70,13 @@ menu "Example Configuration - Access Point Mode"
 
     config ESP_WIFI_AP_SSID
         string "WiFi SSID"
-        default "myssid"
+        default "RPI1_wifi"
         help
             SSID (network name) for the example to connect to.
 
     config ESP_WIFI_AP_PASSWORD
         string "WiFi Password"
-        default "mypassword"
+        default "wifi1234"
         help
             WiFi password (WPA or WPA2) for the example to use.
     config ESP_WIFI_AP_CHANNEL
