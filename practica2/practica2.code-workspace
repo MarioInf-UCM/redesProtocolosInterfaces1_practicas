@@ -4,8 +4,22 @@
             "path": "entregable1"
         },
         {
+            "path": "entregable2"
+        },
+        {
+            "path": "entregable3"
+        },
+        {
             "path": ".."
         }
     ],
-    "settings": {}
+    "settings": {
+        "files.associations": {
+            "freertos.h": "c",
+            "err.h": "c",
+            "esp_mac.h": "c",
+            "string.h": "c",
+            "task.h": "c"
+        }
+    }
 }
