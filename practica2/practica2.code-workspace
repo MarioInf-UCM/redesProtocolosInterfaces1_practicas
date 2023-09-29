@@ -22,5 +22,11 @@
             "path": "entregable6"
         },
     ],
-    "settings": {}
+    "settings": {
+        "files.associations": {
+            "chrono": "c",
+            "random": "c",
+            "limits": "c"
+        }
+    }
 }
