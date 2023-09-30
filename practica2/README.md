@@ -101,8 +101,6 @@ Para esto necesitaremos crear una estructura del tipo **wifi_scan_config_t** y p
 ```C
 ESP_LOGI(TAG, "PASO 2..: REALIZACIÓN DEL ESCANEO");
 wifi_scan_config_t scan_config = {
-    .ssid = 0,
-    .bssid = 0,
     .show_hidden = false,
     .channel = 10,
     .scan_type = WIFI_SCAN_TYPE_ACTIVE,
@@ -120,15 +118,17 @@ I (2419) scan: SSID: RPI1_test    RSSI: -35    Authmode: WIFI_AUTH_WPA2_PSK    P
 I (2429) main_task: Returned from app_main()
 ```
 
-Como podemos ver, nuestra placa ha sido capaz de escanear la red WIFI de prueba que estamos utilizando, por lo que podemos deducir que el escaneo funciona correctamente.
+Como podemos ver, nuestra placa ha sido capaz de escanear la red WIFI de prueba que estamos utilizando, por lo que podemos deducir que el escaneo funciona correctamente. Además, también hemos aumentado drasticamente el tiempo de escaneo en modo activo, lo que repercute en que la placa tarde más en finalziar el escaneo de cada uno de los canales.
+
+## Implementar la conexión a redes conocidas
+
 
 >Entregable 4
 >
 >Diseña un firmware de nodo que realice un escaneado de las redes disponibles. Si el nodo detecta la presencia de una o más de las redes conocidas, se conectará en modo STA a la red de mayor prioridad entre las conocidas. Probadlo usando como redes conocidas la del laboratorio, vuestro móvil y vuestro domicilio.
 
-
-
-
 >Entregable 5
 >
 >Codificar el código de la tarea anterior para que la lista de redes conocidas y la prioridad relativa se puedan configurar con menuconfig.
+
+En este apartado se van a realiiar conjuntamente los entregable 4 y 5, puesto que se piensa desarrollar el uso del menu de configuración a medida que se implementa el desarrollo solicitado.

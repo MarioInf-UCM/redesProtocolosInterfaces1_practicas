@@ -17,8 +17,40 @@
 #include "esp_log.h"
 #include "esp_event.h"
 #include "nvs_flash.h"
+#include "sdkconfig.h"
 
 #define DEFAULT_SCAN_LIST_SIZE CONFIG_EXAMPLE_SCAN_LIST_SIZE
+
+#define WIFICONF_CHANNEL CONFIG_WIFICONF_CHANNEL
+#define WIFICONF_SCANTIME_ACTIVE_MIN CONFIG_WIFICONF_SCANTIME_ACTIVE_MIN
+#define WIFICONF_SCANTIME_ACTIVE_MAX CONFIG_WIFICONF_SCANTIME_ACTIVE_MAX
+#define WIFICONF_SCANTIME_PASSIVE CONFIG_WIFICONF_SCANTIME_PASSIVE
+#if CONFIG_WIFICONF_SHOW_HIDDEN_ENABLE
+#define WIFICONF_SHOW_HIDDEN CONFIG_WIFICONF_SHOW_HIDDEN_ENABLE
+#elif CONFIG_WIFICONF_SHOW_HIDDEN_DISABLE
+#define WIFICONF_SHOW_HIDDEN CONFIG_WIFICONF_SHOW_HIDDEN_DISABLE
+#endif
+#if CONFIG_WIFICONF_SCAN_MODE_ACTIVE
+#define WIFICONF_SCAN_MODE CONFIG_WIFICONF_SCAN_MODE_ACTIVE
+#elif CONFIG_WIFICONF_SCAN_MODE_PASIVE
+#define WIFICONF_SCAN_MODE CONFIG_WIFICONF_SCAN_MODE_PASIVE
+#endif
+
+#define KNOWN_NETWORKS_LIST_SIZE CONFIG_KNOWN_NETWORKS_LIST_SIZE
+#define KNOWN_NETWORKS_SSID_SIZE CONFIG_KNOWN_NETWORKS_SSID_SIZE
+#define KNOWN_NETWORKS_PASS_SIZE CONFIG_KNOWN_NETWORKS_PASS_SIZE
+#define KNOWN_NETWORKS_LIST CONFIG_KNOWN_NETWORKS_LIST
+
+
+static char* print_auth_mode(int authmode);
+static char* print_cipher_type(int pairwise_cipher, int group_cipher);
+static void wifi_scan(void);
+static void splitKnownNetworks(char* string);
+
+static struct knownNetwork {
+  char myNum[20];
+  char myLetter[];
+};
 
 static const char *TAG = "scan";
 
@@ -159,15 +191,18 @@ static void wifi_scan(void)
     //PASO 2..: REALIZACIÓN DEL ESCANEO
     ESP_LOGI(TAG, "PASO 2..: REALIZACIÓN DEL ESCANEO");
     wifi_scan_config_t scan_config = {
-        .ssid = 0,
-        .bssid = 0,
+        #ifdef WIFICONF_SHOW_HIDDEN_ENABLE
+		.show_hidden = true,
+        #elif WIFICONF_SHOW_HIDDEN_DISABLE
 		.show_hidden = false,
-		.channel = 10,
-		.scan_type = WIFI_SCAN_TYPE_ACTIVE,
-		.scan_time.active.min = 1200,
-		.scan_time.active.max = 2400,
-        .scan_time.passive = 360
+        #endif
+		.channel = WIFICONF_CHANNEL,
+		.scan_type = WIFICONF_SCAN_MODE,
+		.scan_time.active.min = WIFICONF_SCANTIME_ACTIVE_MIN,
+		.scan_time.active.max = WIFICONF_SCANTIME_ACTIVE_MAX,
+        .scan_time.passive = WIFICONF_SCANTIME_PASSIVE
 	};
+
     ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
 
     //PASO 3..: OBTENCIÓN DE RESULTADOS
@@ -194,6 +229,16 @@ static void wifi_scan(void)
     }
 
 }
+
+static void splitKnownNetworks(char* string){
+   char * token = strtok(string, " ");
+   while( token != NULL ) {
+      printf( " %s\n", token );
+      token = strtok(NULL, " ");
+   }
+   return;
+}
+
 
 void app_main(void)
 {
