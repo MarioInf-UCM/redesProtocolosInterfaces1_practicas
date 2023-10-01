@@ -132,3 +132,51 @@ Como podemos ver, nuestra placa ha sido capaz de escanear la red WIFI de prueba 
 >Codificar el código de la tarea anterior para que la lista de redes conocidas y la prioridad relativa se puedan configurar con menuconfig.
 
 En este apartado se van a realiiar conjuntamente los entregable 4 y 5, puesto que se piensa desarrollar el uso del menu de configuración a medida que se implementa el desarrollo solicitado.
+
+
+
+
+
+
+
+```BASH
+I (711) wifi_init: WiFi IRAM OP enabled
+I (711) wifi_init: WiFi RX IRAM OP enabled
+I (721) scan: PASO 1..: CONFIGURACIÓN DEL ESCANEO
+I (721) wifi:set country: cc=ES schan=1 nchan=13 policy=0
+
+I (731) phy_init: phy_version 4771,450c73b,Aug 16 2023,11:03:10
+I (811) wifi:mode : sta (24:0a:c4:ea:36:b4)
+I (811) wifi:enable tsf
+I (811) scan: EXTRAYENDO REDES CONOCIDAS: RPI1_test:test1234 RPI1_2test:2test1234;
+I (821) scan: Redes conocidas..:
+I (821) scan:   Prioridad 1)    (RPI1_test:test1234) SSID: RPI1_test    Password: test1234
+I (831) scan:   Prioridad 2)    (RPI1_2test:2test1234) SSID: RPI1_2test    Password: 2test1234
+I (841) scan: PASO 2..: REALIZACIÓN DEL ESCANEO
+I (3741) scan: PASO 3..: OBTENCIÓN DE RESULTADOS
+I (3741) scan: Total APs scanned = 16
+I (3741) scan: SSID: RPI1_test    RSSI: -38    Authmode: WIFI_AUTH_WPA2_PSK    Pairwise Cipher: WIFI_CIPHER_TYPE_CCMP    CHANNEL: 12
+I (3751) scan: SSID: Oppo    RSSI: -49    Authmode: WIFI_AUTH_WPA2_PSK    Pairwise Cipher: WIFI_CIPHER_TYPE_CCMP    CHANNEL: 10
+I (3761) scan: SSID: UCM-CONGRESO    RSSI: -55    Authmode: WIFI_AUTH_WPA2_PSK    Pairwise Cipher: WIFI_CIPHER_TYPE_CCMP    CHANNEL: 1
+I (3771) scan: SSID: eduroam    RSSI: -55    Authmode: WIFI_AUTH_WPA2_ENTERPRISE    Pairwise Cipher: WIFI_CIPHER_TYPE_CCMP    CHANNEL: 1
+I (3781) scan: SSID: UCM    RSSI: -55    Authmode: WIFI_AUTH_OPEN    Pairwise Cipher: WIFI_CIPHER_TYPE_NONE    CHANNEL: 1
+I (3801) scan: SSID: UCM-CONGRESO    RSSI: -73    Authmode: WIFI_AUTH_WPA2_PSK    Pairwise Cipher: WIFI_CIPHER_TYPE_CCMP    CHANNEL: 13
+I (3811) scan: SSID: UCM-CONGRESO    RSSI: -74    Authmode: WIFI_AUTH_WPA2_PSK    Pairwise Cipher: WIFI_CIPHER_TYPE_CCMP    CHANNEL: 13
+I (3821) scan: SSID: eduroam    RSSI: -74    Authmode: WIFI_AUTH_WPA2_ENTERPRISE    Pairwise Cipher: WIFI_CIPHER_TYPE_CCMP    CHANNEL: 13
+I (3831) scan: SSID: UCM    RSSI: -74    Authmode: WIFI_AUTH_OPEN    Pairwise Cipher: WIFI_CIPHER_TYPE_NONE    CHANNEL: 13
+I (3851) scan: SSID: UCMOT    RSSI: -74    Authmode: WIFI_AUTH_WPA2_PSK    Pairwise Cipher: WIFI_CIPHER_TYPE_CCMP    CHANNEL: 13
+I (3861) scan: PASO 4..: CONEXIÓN A RED CONOCIDA
+I (3861) scan: INTENTANDO CONECTAR A: RPI1_test (test1234)
+I (4731) wifi:new:<12,0>, old:<1,0>, ap:<255,255>, sta:<12,0>, prof:1
+I (4731) wifi:state: init -> auth (b0)
+I (4781) wifi:state: auth -> assoc (0)
+I (4791) wifi:state: assoc -> run (10)
+I (4851) wifi:connected with RPI1_test, aid = 1, channel 12, BW20, bssid = ca:df:8d:9a:30:e2
+I (4851) wifi:security: WPA2-PSK, phy: bgn, rssi: -40
+I (4861) wifi:pm start, type: 1
+
+I (4881) wifi:<ba-add>idx:0 (ifx:0, ca:df:8d:9a:30:e2), tid:0, ssn:0, winSize:64
+I (4931) wifi:AP's beacon interval = 102400 us, DTIM period = 2
+I (5871) esp_netif_handlers: sta ip: 192.168.43.198, mask: 255.255.255.0, gw: 192.168.43.1
+
+```

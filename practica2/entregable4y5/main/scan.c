@@ -244,6 +244,7 @@ static char* print_cipher_type(int pairwise_cipher, int group_cipher)
 static void wifi_scan(void)
 {
     //PASO 0..: CONFIGURACIÓN DE ELEMENTOS ANEXOS AL ESCANEO
+    s_wifi_event_group = xEventGroupCreate();
     ESP_LOGI(TAG, "PASO 0..: CONFIGURACIÓN DE ELEMENTOS ANEXOS AL ESCANEO");
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -274,12 +275,18 @@ static void wifi_scan(void)
     splitKnownNetworks(knownNetworksList, stringKnownNetworksList);
     printKnownNetworksList(knownNetworksList);
  
-    esp_event_handler_instance_t instance_any_id;
+/*     esp_event_handler_instance_t instance_any_id;
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
                                                         ESP_EVENT_ANY_ID,
                                                         &event_handler,
                                                         NULL,
                                                         &instance_any_id));
+    esp_event_handler_instance_t instance_got_ip;
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
+                                                        IP_EVENT_STA_GOT_IP,
+                                                        &event_handler,
+                                                        NULL,
+                                                        &instance_got_ip)); */
 
     //PASO 2..: REALIZACIÓN DEL ESCANEO
     ESP_LOGI(TAG, "PASO 2..: REALIZACIÓN DEL ESCANEO");
@@ -333,30 +340,28 @@ static void wifi_scan(void)
     }
 
 
-
+    wifi_config_t wifiConfig = {
+        .sta = {
+            .ssid = " ",
+            .password = " ",
+            .threshold.authmode = ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD,
+            .sae_pwe_h2e = ESP_WIFI_SAE_MODE,
+            .sae_h2e_identifier = EXAMPLE_H2E_IDENTIFIER
+        },
+    };
     if(posToConnect==-1){
         ESP_LOGI(TAG, "NO SE HA DETECTADO NINGUNA RED CONOCIDA");
     }else{
-        ESP_LOGI(TAG, "INTENTANDO CONECTAR A: %s", knownNetworksList[posToConnect].SSID);
-/*         for(int i=0 ; i<KNOWN_NETWORKS_SSID_SIZE ; i++){
+        for(int i=0 ; i<KNOWN_NETWORKS_SSID_SIZE ; i++){
             wifiConfig.sta.ssid[i] = knownNetworksList[posToConnect].SSID[i];
-
         }
-        wifiConfig.sta.password = knownNetworksList[posToConnect].pass; */
-
-        wifi_config_t wifiConfig = {
-            .sta = {
-                .ssid = knownNetworksList[posToConnect].SSID,
-                .password = knownNetworksList[posToConnect].pass,
-                .threshold.authmode = ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD,
-                .sae_pwe_h2e = ESP_WIFI_SAE_MODE,
-                .sae_h2e_identifier = EXAMPLE_H2E_IDENTIFIER
-            },
-        };
-
-
-        //ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifiConfig) );    //Configuramos el modo Estación
-        //ESP_ERROR_CHECK(esp_wifi_start());
+        for(int i=0 ; i<KNOWN_NETWORKS_PASS_SIZE ; i++){
+            wifiConfig.sta.password[i] = knownNetworksList[posToConnect].pass[i];
+        }
+    
+        ESP_LOGI(TAG, "INTENTANDO CONECTAR A: %s (%s)", wifiConfig.sta.ssid, wifiConfig.sta.password);
+        ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifiConfig));
+        esp_wifi_connect();
     }
 
     EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
@@ -369,10 +374,10 @@ static void wifi_scan(void)
      * happened. */
     if (bits & WIFI_CONNECTED_BIT) {
         ESP_LOGI(TAG, "connected to ap SSID:%s password:%s",
-                 knownNetworksList[posToConnect].SSID, knownNetworksList[posToConnect].pass);
+                 wifiConfig.sta.ssid, wifiConfig.sta.password);
     } else if (bits & WIFI_FAIL_BIT) {
         ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
-                 knownNetworksList[posToConnect].SSID, knownNetworksList[posToConnect].pass);
+                 wifiConfig.sta.ssid, wifiConfig.sta.password);
     } else {
         ESP_LOGE(TAG, "UNEXPECTED EVENT");
     }
