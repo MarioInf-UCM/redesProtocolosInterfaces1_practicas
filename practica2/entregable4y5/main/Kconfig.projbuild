@@ -1,0 +1,128 @@
+menu "Example Configuration - Scan config"
+
+    config EXAMPLE_SCAN_LIST_SIZE
+        int "Número maximo de redes escaneadas"
+        range 0 20
+        default 10
+        help
+            Tamaño del sarray que será utilizado apra guardar la lista de puntos de acceso encontrados.
+    
+    choice WIFICONF_SHOW_HIDDEN
+        prompt "Escaneo de redes ocultas"
+        default WIFICONF_SHOW_HIDDEN_DISABLE
+        help
+            Indicar si se quiere obtener información también sobre las redes ocultas
+        config WIFICONF_SHOW_HIDDEN_ENABLE
+            bool "Habilitado"
+        config WIFICONF_SHOW_HIDDEN_DISABLE
+            bool "Desabilitado"
+    endchoice
+
+
+    config WIFICONF_CHANNEL
+        int "Canal de escaneo"
+        default 0
+        help 
+            Indique el canal en el cual quiere realziar el escaneo (0 para indicar todos los canales)-
+
+    choice WIFICONF_SCAN_MODE
+        prompt "Tipo de escaneo"
+        default WIFICONF_SCAN_MODE_ACTIVE
+        help
+            indique el tipo de escaneo a realizar: Activo(se enviarán mensajes de aviso) o Pasivo (únicamente se esperará a la recepción de mensajes periódicos)
+        config WIFICONF_SCAN_MODE_ACTIVE
+            bool "Activo"
+        config WIFICONF_SCAN_MODE_PASIVE
+            bool "Pasivo"
+    endchoice
+
+    config WIFICONF_SCANTIME_ACTIVE_MIN
+        int  "Tiempo mínimo de escaneo en el modo activo"
+        range 20 60
+        default 40
+
+    config WIFICONF_SCANTIME_ACTIVE_MAX
+        int  "Tiempo máximo de escaneo en el modo activo"
+        range 200 20000
+        default 200
+
+    config WIFICONF_SCANTIME_PASSIVE
+        int  "Tiempo de escaneo en el modo pasivo"
+        range 200 20000
+        default 200
+        
+endmenu
+
+
+menu "Example Configuration - Known networks"
+
+    config KNOWN_NETWORKS_LIST_SIZE
+        int  "Número máximo de redes conocidas"
+        range 1 20
+        default 10
+
+        
+    config KNOWN_NETWORKS_LIST
+        string "Lista de redes conocidas"
+        default "RPI1_test:test1234 RPI1_2test:2test1234;"
+        help
+            Las redes se indcan en orden de prioridad descendente y especificadas en el siguiente formato: "SSID_1:PASS_1 SSID_2:PASS_2..."
+    
+
+    config ESP_MAXIMUM_RETRY
+        int "Maximum retry"
+        default 5
+        help
+            Número maximo de intentos apra conectarse con el Punto de Acceso conocido
+
+
+    config ESP_WIFI_PW_ID
+        string "PASSWORD IDENTIFIER"
+        depends on  ESP_WPA3_SAE_PWE_HASH_TO_ELEMENT|| ESP_WPA3_SAE_PWE_BOTH
+        default ""
+        help
+            password identifier for SAE H2E
+
+
+    choice ESP_WIFI_SAE_MODE
+        prompt "WPA3 SAE mode selection"
+        default ESP_WPA3_SAE_PWE_BOTH
+        help
+            Select mode for SAE as Hunt and Peck, H2E or both.
+        config ESP_WPA3_SAE_PWE_HUNT_AND_PECK
+            bool "HUNT AND PECK"
+        config ESP_WPA3_SAE_PWE_HASH_TO_ELEMENT
+            bool "H2E"
+        config ESP_WPA3_SAE_PWE_BOTH
+            bool "BOTH"
+    endchoice
+
+
+    choice ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD
+        prompt "WiFi Scan auth mode threshold"
+        default ESP_WIFI_AUTH_WPA2_PSK
+        help
+            The weakest authmode to accept in the scan mode.
+            This value defaults to ESP_WIFI_AUTH_WPA2_PSK incase password is present and ESP_WIFI_AUTH_OPEN is used.
+            Please select ESP_WIFI_AUTH_WEP/ESP_WIFI_AUTH_WPA_PSK incase AP is operating in WEP/WPA mode.
+
+        config ESP_WIFI_AUTH_OPEN
+            bool "OPEN"
+        config ESP_WIFI_AUTH_WEP
+            bool "WEP"
+        config ESP_WIFI_AUTH_WPA_PSK
+            bool "WPA PSK"
+        config ESP_WIFI_AUTH_WPA2_PSK
+            bool "WPA2 PSK"
+        config ESP_WIFI_AUTH_WPA_WPA2_PSK
+            bool "WPA/WPA2 PSK"
+        config ESP_WIFI_AUTH_WPA3_PSK
+            bool "WPA3 PSK"
+        config ESP_WIFI_AUTH_WPA2_WPA3_PSK
+            bool "WPA2/WPA3 PSK"
+        config ESP_WIFI_AUTH_WAPI_PSK
+            bool "WAPI PSK"
+    endchoice
+
+
+endmenu
