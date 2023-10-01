@@ -37,16 +37,51 @@
 #endif
 
 #define KNOWN_NETWORKS_LIST_SIZE CONFIG_KNOWN_NETWORKS_LIST_SIZE
-#define KNOWN_NETWORKS_SSID_SIZE CONFIG_KNOWN_NETWORKS_SSID_SIZE
-#define KNOWN_NETWORKS_PASS_SIZE CONFIG_KNOWN_NETWORKS_PASS_SIZE
 #define KNOWN_NETWORKS_LIST CONFIG_KNOWN_NETWORKS_LIST
+#define KNOWN_NETWORKS_SSID_SIZE 32
+#define KNOWN_NETWORKS_PASS_SIZE 64
+
+#define EXAMPLE_ESP_MAXIMUM_RETRY  CONFIG_ESP_MAXIMUM_RETRY
+#define WIFI_CONNECTED_BIT BIT0
+#define WIFI_FAIL_BIT      BIT1
+
+#if CONFIG_ESP_WPA3_SAE_PWE_HUNT_AND_PECK
+#define ESP_WIFI_SAE_MODE WPA3_SAE_PWE_HUNT_AND_PECK
+#define EXAMPLE_H2E_IDENTIFIER ""
+#elif CONFIG_ESP_WPA3_SAE_PWE_HASH_TO_ELEMENT
+#define ESP_WIFI_SAE_MODE WPA3_SAE_PWE_HASH_TO_ELEMENT
+#define EXAMPLE_H2E_IDENTIFIER CONFIG_ESP_WIFI_PW_ID
+#elif CONFIG_ESP_WPA3_SAE_PWE_BOTH
+#define ESP_WIFI_SAE_MODE WPA3_SAE_PWE_BOTH
+#define EXAMPLE_H2E_IDENTIFIER CONFIG_ESP_WIFI_PW_ID
+#endif
+
+#if CONFIG_ESP_WIFI_AUTH_OPEN
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_OPEN
+#elif CONFIG_ESP_WIFI_AUTH_WEP
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_WEP
+#elif CONFIG_ESP_WIFI_AUTH_WPA_PSK
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_WPA_PSK
+#elif CONFIG_ESP_WIFI_AUTH_WPA2_PSK
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_WPA2_PSK
+#elif CONFIG_ESP_WIFI_AUTH_WPA_WPA2_PSK
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_WPA_WPA2_PSK
+#elif CONFIG_ESP_WIFI_AUTH_WPA3_PSK
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_WPA3_PSK
+#elif CONFIG_ESP_WIFI_AUTH_WPA2_WPA3_PSK
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_WPA2_WPA3_PSK
+#elif CONFIG_ESP_WIFI_AUTH_WAPI_PSK
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_WAPI_PSK
+#endif
+
+
 
 //*************************************************
 // DEFINICIÓN DE TIPO DE DATOS - INICIO
 struct knownNetwork {
-    char *sentence;
-    char *SSID;
-    char *pass;
+    uint8_t *sentence;
+    uint8_t *SSID;
+    uint8_t *pass;
 }knownNetwork;
 
 void knownNetwork_initValue(struct knownNetwork *data){
@@ -64,10 +99,38 @@ static void wifi_scan(void);
 static void splitKnownNetworks(struct knownNetwork *list, char *string);
 static void initStruct_knownNetwork(struct knownNetwork *data);
 static void printKnownNetworksList(struct knownNetwork* list);
-
+static EventGroupHandle_t s_wifi_event_group;
 
 static const char *TAG = "scan";
 static int numKnownNetworks=0;
+static int s_retry_num = 0;
+
+
+
+static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+{
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+        esp_wifi_connect();
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+
+        if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY) {
+            esp_wifi_connect();
+            s_retry_num++;
+            ESP_LOGI(TAG, "retry to connect to the AP");
+        } else {
+            xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+        }
+        ESP_LOGI(TAG,"connect to the AP fail");
+
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+        ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
+        s_retry_num = 0;
+        xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+    }
+
+}
+
 
 static char* print_auth_mode(int authmode)
 {
@@ -204,12 +267,19 @@ static void wifi_scan(void)
     ESP_ERROR_CHECK(esp_wifi_start());
     
     char *stringKnownNetworksList = KNOWN_NETWORKS_LIST;
-    struct knownNetwork list[KNOWN_NETWORKS_LIST_SIZE];
-    splitKnownNetworks(list, stringKnownNetworksList);
-    printKnownNetworksList(list);
+    struct knownNetwork knownNetworksList[KNOWN_NETWORKS_LIST_SIZE];
     for (int i=0 ; i<KNOWN_NETWORKS_LIST_SIZE ; i++){
-        knownNetwork_initValue(&list[i]);
+        knownNetwork_initValue(&knownNetworksList[i]);
     }
+    splitKnownNetworks(knownNetworksList, stringKnownNetworksList);
+    printKnownNetworksList(knownNetworksList);
+ 
+    esp_event_handler_instance_t instance_any_id;
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
+                                                        ESP_EVENT_ANY_ID,
+                                                        &event_handler,
+                                                        NULL,
+                                                        &instance_any_id));
 
     //PASO 2..: REALIZACIÓN DEL ESCANEO
     ESP_LOGI(TAG, "PASO 2..: REALIZACIÓN DEL ESCANEO");
@@ -251,6 +321,64 @@ static void wifi_scan(void)
         }
     }
 
+    //PASO 4..: CONEXIÓN A RED CONOCIDAS
+    ESP_LOGI(TAG, "PASO 4..: CONEXIÓN A RED CONOCIDA");
+    int posToConnect = -1;
+    for(int i=0 ; i<numKnownNetworks ; i++){
+        for(int j=0 ; (j < DEFAULT_SCAN_LIST_SIZE) && (j < ap_count) ; j++){
+            if(strcmp((const char *)knownNetworksList[i].SSID, (const char *)ap_info[j].ssid)==0){
+                posToConnect=i;
+            }
+        }
+    }
+
+
+
+    if(posToConnect==-1){
+        ESP_LOGI(TAG, "NO SE HA DETECTADO NINGUNA RED CONOCIDA");
+    }else{
+        ESP_LOGI(TAG, "INTENTANDO CONECTAR A: %s", knownNetworksList[posToConnect].SSID);
+/*         for(int i=0 ; i<KNOWN_NETWORKS_SSID_SIZE ; i++){
+            wifiConfig.sta.ssid[i] = knownNetworksList[posToConnect].SSID[i];
+
+        }
+        wifiConfig.sta.password = knownNetworksList[posToConnect].pass; */
+
+        wifi_config_t wifiConfig = {
+            .sta = {
+                .ssid = knownNetworksList[posToConnect].SSID,
+                .password = knownNetworksList[posToConnect].pass,
+                .threshold.authmode = ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD,
+                .sae_pwe_h2e = ESP_WIFI_SAE_MODE,
+                .sae_h2e_identifier = EXAMPLE_H2E_IDENTIFIER
+            },
+        };
+
+
+        //ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifiConfig) );    //Configuramos el modo Estación
+        //ESP_ERROR_CHECK(esp_wifi_start());
+    }
+
+    EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
+                                            WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
+                                            pdFALSE,
+                                            pdFALSE,
+                                            portMAX_DELAY);
+
+    /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually
+     * happened. */
+    if (bits & WIFI_CONNECTED_BIT) {
+        ESP_LOGI(TAG, "connected to ap SSID:%s password:%s",
+                 knownNetworksList[posToConnect].SSID, knownNetworksList[posToConnect].pass);
+    } else if (bits & WIFI_FAIL_BIT) {
+        ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
+                 knownNetworksList[posToConnect].SSID, knownNetworksList[posToConnect].pass);
+    } else {
+        ESP_LOGE(TAG, "UNEXPECTED EVENT");
+    }
+
+
+    return;
 }
 
 
@@ -263,15 +391,19 @@ static void splitKnownNetworks(struct knownNetwork *list, char *string){
     if(strlen(string)>0){
         initStruct_knownNetwork(&list[0]);
     }
-    while((string[i]!='(' && string[i]!='\0') || flagBreak==false){
-        if(string[i]!=' '){
+
+    while(string[i]!=';' || flagBreak==false){
+        if(string[i]!=' ' && string[i]!=';'){
             list[j].sentence[k] = string[i];
             flagBreak=false;
             k++;
         }else{
+            //ESP_LOGI(TAG, "VALORRRRRRRRR: %s", list[j].sentence);
+
             numKnownNetworks++;
             k=0;
             while(list[j].sentence[k]!=':'){
+            //ESP_LOGI(TAG, "VALOR: %c", list[j].sentence[k]);
                 list[j].SSID[k] = list[j].sentence[k];
                 k++;
             }
@@ -287,8 +419,10 @@ static void splitKnownNetworks(struct knownNetwork *list, char *string){
             flagBreak=true;
             j++;
             k=0;
-            if(string[i+1]!='\0' && string[i+1]!='('){
+            if(string[i]!=';'){
                 initStruct_knownNetwork(&list[j]);
+            }else{
+                break;
             }
         } 
         i++;
@@ -298,13 +432,13 @@ static void splitKnownNetworks(struct knownNetwork *list, char *string){
 
 static void initStruct_knownNetwork(struct knownNetwork *data){
     
-    data->sentence = (char*) malloc((KNOWN_NETWORKS_SSID_SIZE+KNOWN_NETWORKS_PASS_SIZE+1)*sizeof(char));
-    memset ( data->sentence, '\0', KNOWN_NETWORKS_SSID_SIZE+KNOWN_NETWORKS_PASS_SIZE+1*sizeof(char));
+    data->sentence = (uint8_t *) malloc((KNOWN_NETWORKS_SSID_SIZE+KNOWN_NETWORKS_PASS_SIZE+1)*sizeof(uint8_t));
+    memset ( data->sentence, '\0', KNOWN_NETWORKS_SSID_SIZE+KNOWN_NETWORKS_PASS_SIZE+1);
     
-    data->SSID = (char*) malloc((KNOWN_NETWORKS_SSID_SIZE)*sizeof(char));
+    data->SSID = (uint8_t *) malloc((KNOWN_NETWORKS_SSID_SIZE)*sizeof(uint8_t));
     memset ( data->SSID, '\0', KNOWN_NETWORKS_SSID_SIZE);
     
-    data->pass = (char*) malloc((KNOWN_NETWORKS_PASS_SIZE)*sizeof(char));
+    data->pass = (uint8_t *) malloc((KNOWN_NETWORKS_PASS_SIZE)*sizeof(uint8_t));
     memset ( data->pass, '\0', KNOWN_NETWORKS_PASS_SIZE);
 
     return;
@@ -314,11 +448,14 @@ static void initStruct_knownNetwork(struct knownNetwork *data){
 static void printKnownNetworksList(struct knownNetwork* list){
     ESP_LOGI(TAG, "Redes conocidas..:");
     for(int i=0 ; i<numKnownNetworks ; i++){
-        ESP_LOGI(TAG, "\tPrioridad %d)\t(%s) SSID: %s    Password: %s", i+1, list[i].sentence, list[i].SSID, list[i].pass);
+        ESP_LOGI(TAG, "\tPrioridad %d)\t(%s) SSID: %s    Password: %s", 
+                    i+1, 
+                    list[i].sentence, 
+                    list[i].SSID, 
+                    list[i].pass);
     }
     return;
 }
-   
 
 
 void app_main(void)
