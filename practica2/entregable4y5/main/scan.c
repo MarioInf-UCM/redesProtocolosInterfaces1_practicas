@@ -41,18 +41,33 @@
 #define KNOWN_NETWORKS_PASS_SIZE CONFIG_KNOWN_NETWORKS_PASS_SIZE
 #define KNOWN_NETWORKS_LIST CONFIG_KNOWN_NETWORKS_LIST
 
+//*************************************************
+// DEFINICIÓN DE TIPO DE DATOS - INICIO
+struct knownNetwork {
+    char *sentence;
+    char *SSID;
+    char *pass;
+}knownNetwork;
+
+void knownNetwork_initValue(struct knownNetwork *data){
+    data->sentence=NULL;
+    data->SSID=NULL;
+    data->pass=NULL;
+    return;
+}
+// DEFINICIÓN DE TIPO DE DATOS - FIN
+//*************************************************
 
 static char* print_auth_mode(int authmode);
 static char* print_cipher_type(int pairwise_cipher, int group_cipher);
 static void wifi_scan(void);
-static void splitKnownNetworks(char* string);
+static void splitKnownNetworks(struct knownNetwork *list, char *string);
+static void initStruct_knownNetwork(struct knownNetwork *data);
+static void printKnownNetworksList(struct knownNetwork* list);
 
-static struct knownNetwork {
-  char myNum[20];
-  char myLetter[];
-};
 
 static const char *TAG = "scan";
+static int numKnownNetworks=0;
 
 static char* print_auth_mode(int authmode)
 {
@@ -187,6 +202,14 @@ static void wifi_scan(void)
     ESP_LOGI(TAG, "PASO 1..: CONFIGURACIÓN DEL ESCANEO");
     esp_wifi_set_country_code("ES", true);
     ESP_ERROR_CHECK(esp_wifi_start());
+    
+    char *stringKnownNetworksList = KNOWN_NETWORKS_LIST;
+    struct knownNetwork list[KNOWN_NETWORKS_LIST_SIZE];
+    splitKnownNetworks(list, stringKnownNetworksList);
+    printKnownNetworksList(list);
+    for (int i=0 ; i<KNOWN_NETWORKS_LIST_SIZE ; i++){
+        knownNetwork_initValue(&list[i]);
+    }
 
     //PASO 2..: REALIZACIÓN DEL ESCANEO
     ESP_LOGI(TAG, "PASO 2..: REALIZACIÓN DEL ESCANEO");
@@ -230,14 +253,72 @@ static void wifi_scan(void)
 
 }
 
-static void splitKnownNetworks(char* string){
-   char * token = strtok(string, " ");
-   while( token != NULL ) {
-      printf( " %s\n", token );
-      token = strtok(NULL, " ");
-   }
-   return;
+
+static void splitKnownNetworks(struct knownNetwork *list, char *string){
+   
+    int i=0, j=0, k=0, k2=0;
+    bool flagBreak = true;
+    ESP_LOGI(TAG, "EXTRAYENDO REDES CONOCIDAS: %s", string);
+
+    if(strlen(string)>0){
+        initStruct_knownNetwork(&list[0]);
+    }
+    while((string[i]!='(' && string[i]!='\0') || flagBreak==false){
+        if(string[i]!=' '){
+            list[j].sentence[k] = string[i];
+            flagBreak=false;
+            k++;
+        }else{
+            numKnownNetworks++;
+            k=0;
+            while(list[j].sentence[k]!=':'){
+                list[j].SSID[k] = list[j].sentence[k];
+                k++;
+            }
+            
+            k++;
+            k2=0;
+            while(list[j].sentence[k]!='\0'){
+                list[j].pass[k2] = list[j].sentence[k];
+                k++;
+                k2++;
+            }
+
+            flagBreak=true;
+            j++;
+            k=0;
+            if(string[i+1]!='\0' && string[i+1]!='('){
+                initStruct_knownNetwork(&list[j]);
+            }
+        } 
+        i++;
+    } 
+    return;
 }
+
+static void initStruct_knownNetwork(struct knownNetwork *data){
+    
+    data->sentence = (char*) malloc((KNOWN_NETWORKS_SSID_SIZE+KNOWN_NETWORKS_PASS_SIZE+1)*sizeof(char));
+    memset ( data->sentence, '\0', KNOWN_NETWORKS_SSID_SIZE+KNOWN_NETWORKS_PASS_SIZE+1*sizeof(char));
+    
+    data->SSID = (char*) malloc((KNOWN_NETWORKS_SSID_SIZE)*sizeof(char));
+    memset ( data->SSID, '\0', KNOWN_NETWORKS_SSID_SIZE);
+    
+    data->pass = (char*) malloc((KNOWN_NETWORKS_PASS_SIZE)*sizeof(char));
+    memset ( data->pass, '\0', KNOWN_NETWORKS_PASS_SIZE);
+
+    return;
+}
+
+
+static void printKnownNetworksList(struct knownNetwork* list){
+    ESP_LOGI(TAG, "Redes conocidas..:");
+    for(int i=0 ; i<numKnownNetworks ; i++){
+        ESP_LOGI(TAG, "\tPrioridad %d)\t(%s) SSID: %s    Password: %s", i+1, list[i].sentence, list[i].SSID, list[i].pass);
+    }
+    return;
+}
+   
 
 
 void app_main(void)

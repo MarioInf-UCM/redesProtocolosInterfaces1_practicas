@@ -64,17 +64,17 @@ menu "Example Configuration - Known networks"
     config KNOWN_NETWORKS_SSID_SIZE
         int  "Número máximo de caracteres que tienen los SSID especificados"
         range 1 30
-        default 15
+        default 20
 
     config KNOWN_NETWORKS_PASS_SIZE
         int  "Número máximo de caracteres que tienen las contraseñas especificados"
         range 1 30
-        default 15
+        default 20
 
     config KNOWN_NETWORKS_LIST
         string "Lista de redes conocidas"
-        default "RPI1_test:test1234 RPI1_2test:2test1234"
+        default "RPI1_test:test1234 RPI1_2test:3test1234 RPI1_2test:3test1234"
         help
-            Las redes deben especificarse en el siguiente formato: "SSID_1:PASS_1 SSID_2:PASS_2..."
+            Las redes se indcan en orden de prioridad descendente y especificadas en el siguiente formato: "SSID_1:PASS_1 SSID_2:PASS_2..."
     
 endmenu
