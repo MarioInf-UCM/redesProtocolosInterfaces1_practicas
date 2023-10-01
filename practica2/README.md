@@ -910,3 +910,69 @@ I (4881) wifi:<ba-add>idx:0 (ifx:0, ca:df:8d:9a:30:e2), tid:0, ssn:0, winSize:64
 I (4931) wifi:AP's beacon interval = 102400 us, DTIM period = 2
 I (5871) esp_netif_handlers: sta ip: 192.168.43.198, mask: 255.255.255.0, gw: 192.168.43.1
 ```
+
+# Entregable 6 - wifi/wifi_enterprise
+
+Para compilar y volcar el ejemplo en la placa se ha descargado el certificado desde [este enlace](https://ssii.ucm.es/file/eduroam) y reemplazado el contenido en el fichero [ca.pem](entregable6/main/ca.pem) dentro del directorio main.
+
+También se han configurado los parámetros adecuados en el proyecto:
+- SSID: eduroam
+- Validate server: activo
+- EAP method: TTLS
+- Phase2 method for TTLS: PAP
+- EAP ID: anonymous@ucm.es
+- EAP USERNAME: (tu correo UCM)
+- EAP PASSWORD: (tu contraseña UCM)
+
+```BASH
+I (575) main_task: Calling app_main()
+I (635) wifi:wifi driver task: 3ffbfb3c, prio:23, stack:6656, core=0
+I (665) wifi:wifi firmware version: ce9244d
+I (665) wifi:wifi certification version: v7.0
+I (665) wifi:config NVS flash: enabled
+I (665) wifi:config nano formating: disabled
+I (665) wifi:Init data frame dynamic rx buffer num: 32
+I (665) wifi:Init management frame dynamic rx buffer num: 32
+I (675) wifi:Init management short buffer num: 32
+I (675) wifi:Init dynamic tx buffer num: 32
+I (685) wifi:Init static rx buffer size: 1600
+I (685) wifi:Init static rx buffer num: 10
+I (695) wifi:Init dynamic rx buffer num: 32
+I (695) wifi_init: rx ba win: 6
+I (695) wifi_init: tcpip mbox: 32
+I (705) wifi_init: udp mbox: 6
+I (705) wifi_init: tcp mbox: 6
+I (715) wifi_init: tcp tx win: 5744
+I (715) wifi_init: tcp rx win: 5744
+I (715) wifi_init: tcp mss: 1440
+I (725) wifi_init: WiFi IRAM OP enabled
+I (725) wifi_init: WiFi RX IRAM OP enabled
+I (735) example: Setting WiFi configuration SSID eduroam...
+I (735) phy_init: phy_version 4670,719f9f6,Feb 18 2021,17:07:07
+I (845) wifi:mode : sta (8c:aa:b5:b8:bf:f4)
+I (845) wifi:enable tsf
+I (855) main_task: Returned from app_main()
+I (2645) wifi:new:<13,0>, old:<1,0>, ap:<255,255>, sta:<13,0>, prof:1
+I (3805) wifi:state: init -> auth (b0)
+I (3805) wifi:state: auth -> assoc (0)
+I (3815) wifi:state: assoc -> run (10)
+I (4525) wifi:connected with eduroam, aid = 2, channel 13, BW20, bssid = 00:dc:b2:51:14:22
+I (4525) wifi:security: WPA2-ENT, phy: bgn, rssi: -52
+I (4525) wifi:pm start, type: 1
+
+I (4545) wifi:<ba-add>idx:0 (ifx:0, 00:dc:b2:51:14:22), tid:0, ssn:0, winSize:64
+I (4585) wifi:AP's beacon interval = 102400 us, DTIM period = 1
+I (4855) example: ~~~~~~~~~~~
+I (4855) example: IP:0.0.0.0
+I (4855) example: MASK:0.0.0.0
+I (4855) example: GW:0.0.0.0
+I (4855) example: ~~~~~~~~~~~
+I (5635) wifi:<ba-add>idx:1 (ifx:0, 00:dc:b2:51:14:22), tid:7, ssn:0, winSize:64
+I (6535) esp_netif_handlers: sta ip: 10.8.73.105, mask: 255.255.128.0, gw: 10.8.0.1
+I (6535) example: Recibida la IP...
+I (6855) example: ~~~~~~~~~~~
+I (6855) example: IP:10.8.73.105
+I (6855) example: MASK:255.255.128.0
+I (6855) example: GW:10.8.0.1
+I (6855) example: ~~~~~~~~~~~
+```
