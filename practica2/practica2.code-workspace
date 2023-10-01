@@ -1,6 +1,12 @@
 {
     "folders": [
         {
+            "path": ".."
+        },
+        {
+            "path": "."
+        },
+        {
             "path": "entregable1"
         },
         {
@@ -10,7 +16,10 @@
             "path": "entregable3"
         },
         {
-            "path": ".."
+            "path": "entregable4y5"
+        },
+        {
+            "path": "entregable6"
         }
     ],
     "settings": {
