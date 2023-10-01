@@ -77,6 +77,11 @@ static void event_handler(void *arg, esp_event_base_t event_base,
         // Fase 3: inicio WiFi - Invocamos esp_wifi_connect() para tratar el evento WIFI_EVENT_STA_START
         esp_wifi_connect();
     }
+    else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_CONNECTED)
+    {
+        wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *)event_data;
+        ESP_LOGI(TAG, "Connected successfully to AP: %s", event->mac);
+    }
     else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
     {
         if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY)

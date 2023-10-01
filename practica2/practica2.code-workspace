@@ -20,7 +20,7 @@
         },
         {
             "path": "entregable6"
-        },
+        }
     ],
     "settings": {
         "files.associations": {
@@ -28,7 +28,12 @@
             "random": "c",
             "limits": "c",
             "list": "c",
-            "string": "c"
+            "string": "c",
+            "freertos.h": "c",
+            "err.h": "c",
+            "esp_mac.h": "c",
+            "string.h": "c",
+            "task.h": "c"
         }
     }
 }
