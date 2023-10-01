@@ -24,6 +24,11 @@
     ],
     "settings": {
         "files.associations": {
+            "chrono": "c",
+            "random": "c",
+            "limits": "c",
+            "list": "c",
+            "string": "c",
             "freertos.h": "c",
             "err.h": "c",
             "esp_mac.h": "c",
