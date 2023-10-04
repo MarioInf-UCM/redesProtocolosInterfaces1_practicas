@@ -53,7 +53,14 @@ Conforme podemos ver en la configuración de ambos equipo, debemos tener en cuen
  - El nivel de seguridad establecido es nivel 2, es decir, se llevará a cabo un cifrado entre ambos extremos.
  - El intento máximo de reintentos efectuados antes del provisionamiento serán 5.
 
-Una vez llevada a cabo la configuración previa, realzaremos una limpieza de la posible información de provisionamiento quedada anteriormente en cuestro SoC mediante la herramienta **idf.py erase_flash** y ejecutaremos el programa de ejemplo **wifi-prov-mgr**. Una vez hecho esto podemos ver como obtenemos la siguiente salida desde el monitor serie:
+Una vez llevada a cabo la configuración previa, realizaremos una limpieza de la posible información de provisionamiento quedada anteriormente en cuestro SoC mediante la herramienta **idf.py erase_flash** (acción que deberemso repetir cada vez que se realiza un nuevo provisionamiento) y ejecutaremos el programa de ejemplo **wifi-prov-mgr**. En los siguientes cuadros podemos ver las salidas obtenidas en cada uno de los pasos indicados, respectivamente.
+
+```BASH
+debian12:~$ idf.py erase_flash
+Warning: Command "erase_flash" is deprecated since v4.4 and will be removed in next major release. Have you wanted to run "erase-flash" instead?
+Executing action: erase_flash
+CMakeLists.txt not found in project directory /home/mario
+```
 
 ```BASH
 I (910) BTDM_INIT: BT controller compile version [f6018c5]
@@ -110,7 +117,13 @@ I (23180) app: Secured session established!
 
 Llegados a este punto, necesitaremos seleccionar en la aplicación de provisionamiento aquella red WIFI a la cual queremos conectar el dispositivo provisionado, en nuestro caso la STM32. De este modo, la aplicación le transmitirá las credenciales tanto de identificación como de acceso a la red WIFI y este podrá conectarse a la misma. En la siguiente imagen podemos ver la seleccción de redes WIFI disponibles, entre las cuales utilizaremos nuestra red de pruebas **RPI1_test**.
 
-
+<img src="images/credencialesWIFI.jpeg" alt="drawing" style="width:19%; 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    margin-botton: 1%;
+"/>
 
 Una vez seleccionada la red WIFI con la que queremos realizar la conexión (y aportadas las credenciales de acceso en el caso de ser necesario), la aplicación de provisionamiento transmitirá dicha información al SoC, el cual realizará automáticamente la conexión con la red que anteriormente hemos indicado. En el siguiente cuadro podemos ver la salida obtenida por el puerto serie cuando el SoC recibe las credenciales de acceso para poder conectarse a la red WIFI.
 
@@ -170,7 +183,66 @@ I (182530) app: Hello World!
 
 ## Aprovisionamiento mediante BLE sin seguridad
 
-## Aprovisionamiento mediante SoftAp
+Para llevar a cabo el provisionamiento sin seguridad deberemos configurar nuestro proyecto **wifi-prov-mgr** para que utilice el nivel 1 de seguridad durante el proceso, mediante el uso del menú de configuración. Esto quiere decir que las credenciales enviadas desde el provisionador se realizarán en texto plano, lo cual puede llegar a suponer una importante brecha de seguridad para la red a la cual se quiere llevar a cabo el acceso.
+
+En la siguiente imagen podemos ver la configuración establecida para la aplicación del SoC. Destacar que salvo el nivel de seguridad empleado, el resto de opciones permanecen iguales que en el apartado anterior.
+
+<img src="images/configuracionBLE_SOC_sinSeguridad.png" alt="drawing" style="width:40%; 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    margin-botton: 1%;
+"/>
+
+Una vez establecida la configuración adecuada, el proceso de provisionamiento se produce igual que el descrito en el caso anterior y con una salida muy semejante, sin embargo, cuando realizamos la conexión entre ambos puntos, podemos ver como la salida no nos indica que este empleando ningún tipo de cifrado (al contrario que cuando utilizamos el nivel 2 de seguridad).
+
+```C
+I (14950) app: BLE transport: Connected!
+I (15960) protocomm_nimble: mtu update event; conn_handle=0 cid=4 mtu=256
+I (17200) app: Secured session established!
+```
+
+Para finalizar, podemos ver como una vez llevado a cabo el provisionamiento y obtención de credenciales WIFI, también se lleva a cabo la desconexión entre ambas partes y el SoC permanece nonectado a la nueva red.
+
+```BASH
+I (69030) app: Received Wi-Fi credentials
+        SSID     : RPI1_test
+        Password : test1234
+I (73410) wifi:new:<10,0>, old:<1,0>, ap:<255,255>, sta:<10,0>, prof:1
+I (74600) wifi:state: init -> auth (b0)
+I (74610) wifi:state: auth -> assoc (0)
+I (74620) wifi:state: assoc -> run (10)
+I (74670) wifi:connected with RPI1_test, aid = 1, channel 10, BW20, bssid = ca:df:8d:9a:30:e2
+I (74670) wifi:security: WPA2-PSK, phy: bgn, rssi: -36
+I (74680) wifi:pm start, type: 1
+
+I (74710) wifi:<ba-add>idx:0 (ifx:0, ca:df:8d:9a:30:e2), tid:0, ssn:0, winSize:64
+I (74720) wifi:AP's beacon interval = 102400 us, DTIM period = 2
+I (75690) app: Connected with IP Address:192.168.43.198
+I (75690) esp_netif_handlers: sta ip: 192.168.43.198, mask: 255.255.255.0, gw: 192.168.43.1
+I (75690) wifi_prov_mgr: STA Got IP
+I (75700) app: Provisioning successful
+I (75700) app: Hello World!
+I (76700) app: Hello World!
+I (77510) NimBLE: GAP procedure initiated: stop advertising.
+
+I (77510) NimBLE: GAP procedure initiated: stop advertising.
+
+I (77520) NimBLE: GAP procedure initiated: terminate connection; conn_handle=0 hci_reason=19
+
+E (77590) protocomm_nimble: Error setting advertisement data; rc = 30
+I (77600) wifi_prov_mgr: Provisioning stopped
+I (77600) app: BLE transport: Disconnected!
+I (77600) app: BLE transport: Disconnected!
+I (77600) wifi_prov_scheme_ble: BTDM memory released
+I (77700) app: Hello World!
+I (78700) app: Hello World!
+I (79700) app: Hello World!
+```
+
+
+## Aprovisionamiento mediante SoftAp con seguridad
 
 Para realizar el aprovisionamiento mediante SoftAP utilizaremos la siguiente aplicación movil:
 
