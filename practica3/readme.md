@@ -187,7 +187,7 @@ Para llevar a cabo el provisionamiento sin seguridad deberemos configurar nuestr
 
 En la siguiente imagen podemos ver la configuración establecida para la aplicación del SoC. Destacar que salvo el nivel de seguridad empleado, el resto de opciones permanecen iguales que en el apartado anterior.
 
-<img src="images/configuracionBLE_SOC_sinSeguridad.png" alt="drawing" style="width:40%; 
+<img src="images/configuracionBLE_SOC_sinSeguridad.png" alt="drawing" style="width:30%; 
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -268,7 +268,9 @@ Ambas aplicaciones son muy parecidas por lo que el proceso a llevar a cabo para 
 
 Podemos ver como la configuración utilizada es, en esencia, la misma que la empleada para el provisionamiento mediante BLE, con la única diferencia de que se ha establecido la opción SoftAP en ambos extremos. 
 
-Una vez establecida la configuración y seleccionado el modo de uso con cifrado de seguridad, podemos ver que al inciar la aplicación del SoC ahora obtebnemos una salida con unos detalles un poco diferentes. En el siguiente cuadro podmeos ver la salida inicial pbtenida del SoC antes de realizar el enlace entre ambos puntos. 
+Una vez establecida la configuración seleccionando el modo de uso con cifrado de seguridad y habiendo limpiado la memoria del SoC, podemos ver que al inciar la aplicación del SoC ahora obtenemos una salida con unos detalles un poco diferentes. Al ejecutar el programa en nuestra STM32, en las primeras líneas obtenidas, podemos ver como nos vuelve a indicar el uso de un cifrado de seguridad.
+
+En el siguiente cuadro podmeos ver la salida inicial pbtenida del SoC antes de realizar el enlace entre ambos puntos. 
 
 ```BASH
 I (725) app: Starting provisioning
@@ -321,9 +323,15 @@ Si analizamos la salida obtenida, podemos ver las siguientes diferencias con res
  - Se ha inciiado el protocolo DHCP en la interfáz **WIFI_AP_DEF** con dirección IP **192.168.4.1**.
  - También nos indica el modo de cofificación utilizado, siendo en este caso **ECC LVL 0 & QR Code Version 10**.
 
- En la 
+ En este caso, y a diferencia de lo realizado en el modo BLE, una vez escaneado el código QR devuelto por el SoC necesitaremos seleccionar el identificador del dispositivo para llevar a cabo el provisionamiento. En la siguiente iamgen podemos ver la inetrfáz de selección indicada.
 
-********
+ <img src="images/seleccionDispositivo_softAP.jpeg" alt="drawing" style="width:18%; 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    margin-botton: 1%;
+"/>
 
 Una vez realizada la conexión entre los puntos y aportadas las credenciales para la realzaición del provisionamiento, podemso ver como la salida obtenida desde el SoC sigue los mismos pasos en la conexión mediante BLE. Esto incluye tanto la conexión con al red WIFI cuyos parámetros de acceso hemos provisionado como la desconexión del programa de provisionamiento una vez la conexión se ha llevado a cabo correctamente.
 
@@ -369,5 +377,72 @@ I (77555) app: Hello World!
 I (78555) app: Hello World!
 ```
 
-## Aprovisionamiento mediante SoftAp con seguridad
+## Aprovisionamiento mediante SoftAp sin seguridad
 
+De la misma manera que hemos realizado en el apartado de BLE, para poder llevar a cabo el modo de provisionamiento SoftAP sin seguridad, necesitaremos configurar el **nivel de seguridad 1** mediante el menú de configuración del proyecto (manteniendo en este caso, el modo de provisionamiento mediante SoftAP). En la siguiente imagen podemso ver dicha configuración.
+
+<img src="images/configuracionSoftAP_SOC_sinSeguridad.png" alt="drawing" style="width:30%; 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    margin-botton: 1%;
+"/>
+
+Una vez establecida la configuración y llevada a cabo la conexión en nuestro SoC, podemos ver como se vuelven a establecer adecuadamente las direcciones MAC de los modos de operación pero, a diferencia del caso anterior, esta vez no nos indica nada a cerca del cifrado de datos. En la siguiente imagen podemos ver la sección de salida que se corresponde a los mencionado:
+
+```BASH
+I (725) app: Starting provisioning
+I (735) phy_init: phy_version 4771,450c73b,Aug 16 2023,11:03:10
+I (815) wifi:mode : sta (24:0a:c4:ea:36:b4)
+I (815) wifi:enable tsf
+I (825) wifi:mode : sta (24:0a:c4:ea:36:b4) + softAP (24:0a:c4:ea:36:b5)
+```
+
+Una vez indicado esto, el resto del proceso sigue las mismas pautas que las realziadas en el apartado anterior, obeteniendo una salida equivalente y llevando a cabo la conexión a la red WIFI y la desconexión del provisionador. En el siguiente cuadro podemos ver la salida obtenida desde nuestro SoC:
+
+```BASH
+I (22325) wifi:new:<1,0>, old:<1,1>, ap:<1,1>, sta:<0,0>, prof:1
+I (22335) wifi:station: 66:9f:f1:96:ee:8c join, AID=1, bgn, 20
+I (22335) app: SoftAP transport: Connected!
+I (22485) wifi:station: 66:9f:f1:96:ee:8c leave, AID = 1, bss_flags is 134243, bss:0x3ffca3fc
+I (22485) wifi:new:<1,0>, old:<1,0>, ap:<1,1>, sta:<0,0>, prof:1
+I (22485) app: SoftAP transport: Disconnected!
+I (22655) wifi:new:<1,0>, old:<1,0>, ap:<1,1>, sta:<0,0>, prof:1
+I (22655) wifi:station: 66:9f:f1:96:ee:8c join, AID=1, bgn, 20
+I (22655) app: SoftAP transport: Connected!
+I (22855) wifi:<ba-add>idx:2 (ifx:1, 66:9f:f1:96:ee:8c), tid:0, ssn:0, winSize:64
+I (22915) esp_netif_lwip: DHCP server assigned IP to a client, IP is: 192.168.4.2
+I (24095) app: Secured session established!
+I (41335) app: Received Wi-Fi credentials
+        SSID     : RPI1_test
+        Password : test1234
+I (45175) wifi:primary chan differ, old=1, new=1, start CSA timer
+I (45175) wifi:new:<1,1>, old:<1,0>, ap:<1,1>, sta:<1,0>, prof:1
+I (47125) wifi:state: init -> auth (b0)
+I (47135) wifi:state: auth -> assoc (0)
+I (47155) wifi:state: assoc -> run (10)
+I (47195) wifi:connected with RPI1_test, aid = 4, channel 1, BW20, bssid = ca:df:8d:9a:30:e2
+I (47195) wifi:security: WPA2-PSK, phy: bgn, rssi: -39
+I (47205) wifi:pm start, type: 1
+
+I (47215) wifi:<ba-add>idx:0 (ifx:0, ca:df:8d:9a:30:e2), tid:0, ssn:0, winSize:64
+I (47245) wifi:AP's beacon interval = 102400 us, DTIM period = 2
+I (48215) app: Connected with IP Address:192.168.43.198
+I (48215) esp_netif_handlers: sta ip: 192.168.43.198, mask: 255.255.255.0, gw: 192.168.43.1
+I (48215) wifi_prov_mgr: STA Got IP
+I (48225) app: Provisioning successful
+I (48225) app: Hello World!
+I (49225) app: Hello World!
+I (49435) wifi:station: 66:9f:f1:96:ee:8c leave, AID = 1, bss_flags is 134243, bss:0x3ffca488
+I (49435) wifi:new:<1,0>, old:<1,1>, ap:<1,1>, sta:<1,0>, prof:1
+I (49435) wifi:<ba-del>idx:2, tid:0
+I (49435) app: SoftAP transport: Disconnected!
+I (50225) app: Hello World!
+I (50495) wifi:mode : sta (24:0a:c4:ea:36:b4)
+I (50505) wifi_prov_mgr: Provisioning stopped
+I (51225) app: Hello World!
+I (52225) app: Hello World!
+I (53225) app: Hello World!
+I (54225) app: Hello World!
+```
