@@ -15,18 +15,19 @@
 </style>
 
 
-# Aprovisionamiento de credenciales WIFI
+# Provisionamiento de credenciales WIFI
 
-En este apartado llevaremos a cabo el aprovisionamiento de nuestra placa STM32 mediante el uso de diferentes aplicaciones móviles. Para poder llevar a cabo la realización de aprovisionamiento vamos a ejecutar en nuestro SoC el ejemplo **examples/provisioning/wifi-prov-mgr**, el cuál será encargado de gestionar la recepción de las creedenciales desde nuestra aplicación movil.
+En este apartado llevaremos a cabo el aprovisionamiento de nuestra placa STM32 mediante el uso de diferentes aplicaciones móviles. Para poder llevar a cabo la realización del aprovisionamiento, vamos a ejecutar en nuestro SoC el ejemplo **examples/provisioning/wifi-prov-mgr**, el cuál será el encargado de gestionar la recepción de las credenciales desde nuestra aplicación móvil.
 
 >Tarea
 >
 >Utilizando las aplicaciones correspondientes a tu dispositivo móvil, tanto para el uso de BLE como de SoftAP, provisiona tu ESP32 utilizando las credenciales que correspondan a tu red WiFi. Recuerda, antes de cada repetición del experimento, utilizar la orden idf.py erase_flash para eliminar información de provisionamiento de sesiones anteriores. Comprueba el funcionamiento de los distintos niveles de seguridad.
 >
 >Añade a tu informe las capturas de pantalla correspondientes a la salida del ESP32 que evidencien que el proceso de provisionamiento se ha realizado correctamente.
-## Aprovisionamiento mediante BLE con seguridad
 
-Para realizar el aprovisionamiento mediante BLE, tanto con seguridad como sin ella, utilizaremos la siguiente aplicación movil:
+## Provisionamiento mediante BLE con seguridad
+
+Para realizar el provisionamiento mediante BLE, tanto con seguridad como sin ella, utilizaremos la siguiente aplicación móvil:
 
 <img src="images/AplicacionBLE.png" alt="drawing" style="width:60%; 
     display: block;
@@ -36,24 +37,24 @@ Para realizar el aprovisionamiento mediante BLE, tanto con seguridad como sin el
     margin-botton: 1%;
 "/>
 
-Antes de poner a correr cualquiera de los dos extremos (el SoC utilizado por un lado y nuestro dispositivo móvil por el otro), necesitaremos configurar adecuadamente tanto la aplicación de nuestro dispositivo movil como el ejemplo que se ejecutará en nuesta placa STM32. En las siguientes imágenes se puede observar tanto la configuración especificada en el ejemplo **wifi-prov-mgr** ejecutado en el SoC mediante el menú de configuración (izquierda), como la establecida en la aplicación movil utilizada para llevar a cabo el provisionamiento mediante BLE (derecha).
+Antes de poner a correr cualquiera de los dos extremos (el SoC utilizado por un lado y nuestro dispositivo móvil por el otro), necesitaremos configurar adecuadamente tanto la aplicación de nuestro dispositivo móvil como el ejemplo que se ejecutará en nuestra placa STM32. En las siguientes imágenes se puede observar tanto la configuración especificada en el ejemplo **wifi-prov-mgr** ejecutado en el SoC mediante el menú de configuración (izquierda), como la establecida en la aplicación móvil utilizada para llevar a cabo el provisionamiento mediante BLE (derecha).
 
 <div class="row">
-  <div class="columnImages" style="width:50%; margin-left:10%">
-    <img src="images/configuracionBLE_SOC_conSeguridad.png" alt="Imagen configuracion SoC" style="width:100%">
+  <div class="columnImages" style="widh:50%; margin-left:10%">
+    <img src="images/configuracionBLE_SOC_conSeguridad.png" alt="Imagen configuración SoC" style="width:100%">
   </div>
 
   <div class="columnImages" style="width:19%; float: right; margin-right:10%">
-    <img src="images/configuracionBLE_apMovil_conSeguridad.jpeg" alt="Imagen configruacion aplicación movil" style="width:100%">
+    <img src="images/configuracionBLE_apMovil_conSeguridad.jpeg" alt="Imagen configuración aplicación móvil" style="width:100%">
   </div>
 </div>
 
 Conforme podemos ver en la configuración de ambos equipo, debemos tener en cuenta:
  - El tipo de provisionamiento soportado en ambos dispositivos es BLE.
  - El nivel de seguridad establecido es nivel 2, es decir, se llevará a cabo un cifrado entre ambos extremos.
- - El intento máximo de reintentos efectuados antes del provisionamiento serán 5.
+ - El número máximo de reintentos efectuados antes del provisionamiento serán 5.
 
-Una vez llevada a cabo la configuración previa, realizaremos una limpieza de la posible información de provisionamiento quedada anteriormente en cuestro SoC mediante la herramienta **idf.py erase_flash** (acción que deberemso repetir cada vez que se realiza un nuevo provisionamiento) y ejecutaremos el programa de ejemplo **wifi-prov-mgr**. En los siguientes cuadros podemos ver las salidas obtenidas en cada uno de los pasos indicados, respectivamente.
+Una vez llevada a cabo la configuración previa, realizaremos una limpieza de la posible información de provisionamiento establecida anteriormente en nuestro SoC mediante la herramienta **idf.py erase_flash** (acción que deberemos repetir cada vez que se realiza un nuevo provisionamiento) y ejecutaremos el programa de ejemplo **wifi-prov-mgr**. En los siguientes cuadros podemos ver las salidas obtenidas en cada uno de los pasos indicados, respectivamente.
 
 ```BASH
 debian12:~$ idf.py erase_flash
@@ -102,11 +103,11 @@ I (1480) app: If QR code is not visible, copy paste the below URL in a browser.
 https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"PROV_EA36B4","username":"wifiprov","pop":"abcd1234","transport":"ble"}
 ```
 
-Observamos como se ha generado el código QR necesario apra realziar el aprovisionamiento, además de como se especifica información adyacente a cerca de la configuración establecida para el mismo, como el tipo de transporte o el nombre de indentificación del dispositivo. En el caso de duda, se puede replicar el código obtenido mediante el enlace que se encuentra justo después del mismo.
+Observamos que se ha generado el código QR necesario para realizar el aprovisionamiento, además de como se especifica información a cerca de la configuración establecida para el mismo, como el tipo de transporte o el nombre de identificación del dispositivo. En el caso de duda, se puede replicar el código obtenido mediante el enlace que se encuentra justo después del mismo.
 
-Una vez generado nuestro medio de enlace entre el dispositivo y el provisionador, escaneamos el código QR con la aplicación de utilizada con el objetivo de establecer el enlace entre ambas partes. En este momento nuestro teléfono movil y el SoC se encuentran conectados y la espera de que el primero le trasmita las claves de aprovisionamiento al segundo. 
+Una vez generado nuestro medio de enlace entre el dispositivo y el provisionador, escaneamos el código QR con la aplicación utilizada con el objetivo de establecer el enlace entre ambas partes. En este momento nuestro teléfono móvil y el SoC se encuentran conectados y la espera de que el primero le trasmita las claves de provisionamiento al segundo. 
 
-En el siguiente cuadro podemos ver la salida que nos devuelve el SoC al realizar dicha conexión con el provisionador, en la cual nos especifica que se está utilizando el protocolo BLE y como se esta realizando un cifrado mediante claves, a la ver que se ha verificado la clave pública utilizada.
+En el siguiente cuadro podemos ver la salida que nos devuelve el SoC al realizar dicha conexión con el provisionador, en la cual nos especifica que se está utilizando el protocolo BLE y como se esta realizando un cifrado mediante claves, a la vez que se ha verificado la clave pública utilizada.
 
 ```BASH
 I (20350) app: BLE transport: Connected!
@@ -115,7 +116,7 @@ I (22550) security2: Using salt and verifier to generate public key...
 I (23180) app: Secured session established!
 ```
 
-Llegados a este punto, necesitaremos seleccionar en la aplicación de provisionamiento aquella red WIFI a la cual queremos conectar el dispositivo provisionado, en nuestro caso la STM32. De este modo, la aplicación le transmitirá las credenciales tanto de identificación como de acceso a la red WIFI y este podrá conectarse a la misma. En la siguiente imagen podemos ver la seleccción de redes WIFI disponibles, entre las cuales utilizaremos nuestra red de pruebas **RPI1_test**.
+Llegados a este punto, necesitaremos seleccionar en la aplicación de provisionamiento aquella red WIFI a la cual queremos conectar el dispositivo provisionado, en nuestro caso la STM32. De este modo, la aplicación le transmitirá las credenciales tanto de identificación como de acceso a la red WIFI y este podrá conectarse a la misma. En la siguiente imagen podemos ver la selección de redes WIFI disponibles, entre las cuales utilizaremos nuestra red de pruebas **RPI1_test**.
 
 <img src="images/credencialesWIFI.jpeg" alt="drawing" style="width:19%; 
     display: block;
@@ -161,7 +162,7 @@ I (177530) app: Hello World!
 I (178530) app: Hello World!
 ```
 
-Una vez que el SoC ha obtenido la dirección IP de la red a la cual se ha conectado, este cerrará la conexión con la aplciación de provisionamiento. En el siguiente cuadro podemos ver la salida generada por dicha desconexión, la cual se produce de manera automática después de la salida anterior y pone punto y final al proceso de provisionamiento.
+Una vez que el SoC ha obtenido la dirección IP de la red a la cual se ha conectado, este cerrará la conexión con la aplicación de provisionamiento. En el siguiente cuadro podemos ver la salida generada por dicha desconexión, la cual se produce de manera automática después de la salida anterior y pone punto y final al proceso de provisionamiento.
 
 ```BASH
 I (179300) NimBLE: GAP procedure initiated: stop advertising.
@@ -181,9 +182,9 @@ I (181530) app: Hello World!
 I (182530) app: Hello World!
 ```
 
-## Aprovisionamiento mediante BLE sin seguridad
+## Provisionamiento mediante BLE sin seguridad
 
-Para llevar a cabo el provisionamiento sin seguridad deberemos configurar nuestro proyecto **wifi-prov-mgr** para que utilice el nivel 1 de seguridad durante el proceso, mediante el uso del menú de configuración. Esto quiere decir que las credenciales enviadas desde el provisionador se realizarán en texto plano, lo cual puede llegar a suponer una importante brecha de seguridad para la red a la cual se quiere llevar a cabo el acceso.
+Para llevar a cabo el provisionamiento sin seguridad, deberemos configurar nuestro proyecto **wifi-prov-mgr** para que utilice el nivel 1 de seguridad durante el proceso, mediante el uso del menú de configuración. Esto quiere decir que las credenciales enviadas desde el provisionador se realizarán en texto plano, lo cual puede llegar a suponer una importante brecha de seguridad para la red a la cual se quiere llevar a cabo el acceso.
 
 En la siguiente imagen podemos ver la configuración establecida para la aplicación del SoC. Destacar que salvo el nivel de seguridad empleado, el resto de opciones permanecen iguales que en el apartado anterior.
 
@@ -195,7 +196,8 @@ En la siguiente imagen podemos ver la configuración establecida para la aplicac
     margin-botton: 1%;
 "/>
 
-Una vez establecida la configuración adecuada, el proceso de provisionamiento se produce igual que el descrito en el caso anterior y con una salida muy semejante, sin embargo, cuando realizamos la conexión entre ambos puntos, podemos ver como la salida no nos indica que este empleando ningún tipo de cifrado (al contrario que cuando utilizamos el nivel 2 de seguridad).
+Una vez establecida la configuración adecuada, el proceso de provisionamiento se produce igual que el descrito en el caso anterior y con una salida muy semejante. Sin embargo, cuando realizamos la conexión entre ambos puntos, podemos ver como la salida no nos indica que se este empleando ningún tipo de cifrado (al contrario que cuando utilizamos el nivel 2 de seguridad).
+
 
 ```C
 I (14950) app: BLE transport: Connected!
@@ -203,7 +205,7 @@ I (15960) protocomm_nimble: mtu update event; conn_handle=0 cid=4 mtu=256
 I (17200) app: Secured session established!
 ```
 
-Para finalizar, podemos ver como una vez llevado a cabo el provisionamiento y obtención de credenciales WIFI, también se lleva a cabo la desconexión entre ambas partes y el SoC permanece nonectado a la nueva red.
+Para finalizar, podemos ver como una vez llevado a cabo el provisionamiento y obtención de credenciales WIFI, también se lleva a cabo la desconexión entre ambas partes y el SoC permanece conectado a la nueva red.
 
 ```BASH
 I (69030) app: Received Wi-Fi credentials
@@ -242,9 +244,9 @@ I (79700) app: Hello World!
 ```
 
 
-## Aprovisionamiento mediante SoftAp con seguridad
+## Provisionamiento mediante SoftAp con seguridad
 
-Para realizar el aprovisionamiento mediante SoftAP, tanto con seguridad como sin ella, utilizaremos la siguiente aplicación movil:
+Para realizar el provisionamiento mediante SoftAP, tanto con seguridad como sin ella, utilizaremos la siguiente aplicación móvil:
 
 <img src="images/AplicacionSoftAP.png" alt="drawing" style="width:60%; 
     display: block;
@@ -254,7 +256,7 @@ Para realizar el aprovisionamiento mediante SoftAP, tanto con seguridad como sin
     margin-botton: 1%;
 "/>
 
-Ambas aplicaciones son muy parecidas por lo que el proceso a llevar a cabo para realziar el provisionamiento será muy similar con ambas. Dicho esto y de igual manera que en el caso anterior, el primer paso será llevar a cabo la configuración correcta de ambos extremos.  En las siguientes imágenes se puede ver tanto la configuración del SoC (izquierda), como la establecida en la aplicación movil utilizada para llevar a cabo el provisionamiento mediante SoftAP (derecha).
+Ambas aplicaciones son muy parecidas por lo que el proceso a llevar a cabo para realizar el provisionamiento será muy similar con ambas. Dicho esto y de igual manera que en el caso anterior, el primer paso será llevar a cabo la configuración correcta de ambos extremos.  En las siguientes imágenes se puede ver tanto la configuración del SoC (izquierda), como la establecida en la aplicación móvil utilizada para llevar a cabo el provisionamiento mediante SoftAP (derecha).
 
 <div class="row">
   <div class="columnImages" style="width:50%; margin-left:10%">
@@ -268,9 +270,7 @@ Ambas aplicaciones son muy parecidas por lo que el proceso a llevar a cabo para 
 
 Podemos ver como la configuración utilizada es, en esencia, la misma que la empleada para el provisionamiento mediante BLE, con la única diferencia de que se ha establecido la opción SoftAP en ambos extremos. 
 
-Una vez establecida la configuración seleccionando el modo de uso con cifrado de seguridad y habiendo limpiado la memoria del SoC, podemos ver que al inciar la aplicación del SoC ahora obtenemos una salida con unos detalles un poco diferentes. Al ejecutar el programa en nuestra STM32, en las primeras líneas obtenidas, podemos ver como nos vuelve a indicar el uso de un cifrado de seguridad.
-
-En el siguiente cuadro podmeos ver la salida inicial pbtenida del SoC antes de realizar el enlace entre ambos puntos. 
+Una vez establecida la configuración seleccionando el modo de uso con cifrado de seguridad y habiendo limpiado la memoria del SoC, podemos ver que al iniciar la aplicación obtenemos una salida con unos detalles un poco diferentes. En el siguiente cuadro podemos ver la salida inicial obtenida del SoC antes de realizar el enlace entre ambos puntos, y como en las primeras líneas no indica el uso de un cifrado de seguridad.
 
 ```BASH
 I (725) app: Starting provisioning
@@ -319,11 +319,11 @@ https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"P
 ```
 
 Si analizamos la salida obtenida, podemos ver las siguientes diferencias con respecto al modo de provisionamiento mediante BLE:
- - Se india que se ha iniciaddo el WIFI en modo convinado con las direcciones MAC  **24:0a:c4:ea:36:b4** para Estación y **24:0a:c4:ea:36:b5** para Punto de Acceso.
- - Se ha inciiado el protocolo DHCP en la interfáz **WIFI_AP_DEF** con dirección IP **192.168.4.1**.
- - También nos indica el modo de cofificación utilizado, siendo en este caso **ECC LVL 0 & QR Code Version 10**.
+ - Se india que se ha iniciado el WIFI en modo combinado con las direcciones MAC  **24:0a:c4:ea:36:b4** para Estación y **24:0a:c4:ea:36:b5** para Punto de Acceso.
+ - Se ha iniciado el protocolo DHCP en la interfaz **WIFI_AP_DEF** con dirección IP **192.168.4.1**.
+ - También nos indica el modo de codificación utilizado, siendo en este caso **ECC LVL 0 & QR Code Version 10**.
 
- En este caso, y a diferencia de lo realizado en el modo BLE, una vez escaneado el código QR devuelto por el SoC necesitaremos seleccionar el identificador del dispositivo para llevar a cabo el provisionamiento. En la siguiente iamgen podemos ver la inetrfáz de selección indicada.
+ En este caso, y a diferencia de lo realizado en el modo BLE, una vez escaneado el código QR devuelto por el SoC necesitaremos seleccionar el identificador del dispositivo para llevar a cabo el provisionamiento. En la siguiente imagen podemos ver la interfaz de selección indicada.
 
  <img src="images/seleccionDispositivo_softAP.jpeg" alt="drawing" style="width:18%; 
     display: block;
@@ -333,7 +333,7 @@ Si analizamos la salida obtenida, podemos ver las siguientes diferencias con res
     margin-botton: 1%;
 "/>
 
-Una vez realizada la conexión entre los puntos y aportadas las credenciales para la realzaición del provisionamiento, podemso ver como la salida obtenida desde el SoC sigue los mismos pasos en la conexión mediante BLE. Esto incluye tanto la conexión con al red WIFI cuyos parámetros de acceso hemos provisionado como la desconexión del programa de provisionamiento una vez la conexión se ha llevado a cabo correctamente.
+Una vez realizada la conexión entre los puntos y aportadas las credenciales para la realización del provisionamiento, podemos ver como la salida obtenida desde el SoC sigue los mismos pasos en la conexión mediante BLE. Esto incluye tanto la conexión con al red WIFI, cuyos parámetros de acceso hemos provisionado, como la desconexión del programa de provisionamiento una vez que dicha conexión se ha llevado a cabo correctamente.
 
 En el siguiente cuadro podemos ver la salida obtenida desde el SoC una vez se ha llevado a cabo el provisionamiento:
 
@@ -377,9 +377,9 @@ I (77555) app: Hello World!
 I (78555) app: Hello World!
 ```
 
-## Aprovisionamiento mediante SoftAp sin seguridad
+## Provisionamiento mediante SoftAp sin seguridad
 
-De la misma manera que hemos realizado en el apartado de BLE, para poder llevar a cabo el modo de provisionamiento SoftAP sin seguridad, necesitaremos configurar el **nivel de seguridad 1** mediante el menú de configuración del proyecto (manteniendo en este caso, el modo de provisionamiento mediante SoftAP). En la siguiente imagen podemso ver dicha configuración.
+De la misma manera que hemos realizado en el apartado de provisionamiento mediante BLE, para poder llevar a cabo el modo de provisionamiento SoftAP sin seguridad necesitaremos configurar el **nivel de seguridad 1** mediante el menú de configuración del proyecto (manteniendo en este caso, el modo de provisionamiento mediante SoftAP). En la siguiente imagen podemos ver dicha configuración:
 
 <img src="images/configuracionSoftAP_SOC_sinSeguridad.png" alt="drawing" style="width:30%; 
     display: block;
@@ -399,7 +399,7 @@ I (815) wifi:enable tsf
 I (825) wifi:mode : sta (24:0a:c4:ea:36:b4) + softAP (24:0a:c4:ea:36:b5)
 ```
 
-Una vez indicado esto, el resto del proceso sigue las mismas pautas que las realziadas en el apartado anterior, obeteniendo una salida equivalente y llevando a cabo la conexión a la red WIFI y la desconexión del provisionador. En el siguiente cuadro podemos ver la salida obtenida desde nuestro SoC:
+Una vez indicado esto, el resto del proceso sigue las mismas pautas que las realizadas en el apartado anterior, obteniendo una salida equivalente y llevando a cabo la conexión a la red WIFI y la desconexión del provisionador. En el siguiente cuadro podemos ver la salida obtenida desde nuestro SoC:
 
 ```BASH
 I (22325) wifi:new:<1,0>, old:<1,1>, ap:<1,1>, sta:<0,0>, prof:1
