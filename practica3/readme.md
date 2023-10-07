@@ -26,7 +26,7 @@ En este apartado llevaremos a cabo el aprovisionamiento de nuestra placa STM32 m
 >Añade a tu informe las capturas de pantalla correspondientes a la salida del ESP32 que evidencien que el proceso de provisionamiento se ha realizado correctamente.
 ## Aprovisionamiento mediante BLE con seguridad
 
-Para realizar el aprovisionamiento mediante BLE utilizaremos la siguiente aplicación movil:
+Para realizar el aprovisionamiento mediante BLE, tanto con seguridad como sin ella, utilizaremos la siguiente aplicación movil:
 
 <img src="images/AplicacionBLE.png" alt="drawing" style="width:60%; 
     display: block;
@@ -244,7 +244,7 @@ I (79700) app: Hello World!
 
 ## Aprovisionamiento mediante SoftAp con seguridad
 
-Para realizar el aprovisionamiento mediante SoftAP utilizaremos la siguiente aplicación movil:
+Para realizar el aprovisionamiento mediante SoftAP, tanto con seguridad como sin ella, utilizaremos la siguiente aplicación movil:
 
 <img src="images/AplicacionSoftAP.png" alt="drawing" style="width:60%; 
     display: block;
@@ -253,3 +253,121 @@ Para realizar el aprovisionamiento mediante SoftAP utilizaremos la siguiente apl
     margin-top: 1%;
     margin-botton: 1%;
 "/>
+
+Ambas aplicaciones son muy parecidas por lo que el proceso a llevar a cabo para realziar el provisionamiento será muy similar con ambas. Dicho esto y de igual manera que en el caso anterior, el primer paso será llevar a cabo la configuración correcta de ambos extremos.  En las siguientes imágenes se puede ver tanto la configuración del SoC (izquierda), como la establecida en la aplicación movil utilizada para llevar a cabo el provisionamiento mediante SoftAP (derecha).
+
+<div class="row">
+  <div class="columnImages" style="width:50%; margin-left:10%">
+    <img src="images/configuracionSoftAP_SOC_conSeguridad.png" alt="Imagen configuracion SoC" style="width:100%">
+  </div>
+
+  <div class="columnImages" style="width:17%; float: right; margin-right:10%">
+    <img src="images/configuracionSoftAP_apMovil_conSeguridad.jpeg" alt="Imagen configruacion aplicación movil" style="width:100%">
+  </div>
+</div>
+
+Podemos ver como la configuración utilizada es, en esencia, la misma que la empleada para el provisionamiento mediante BLE, con la única diferencia de que se ha establecido la opción SoftAP en ambos extremos. 
+
+Una vez establecida la configuración y seleccionado el modo de uso con cifrado de seguridad, podemos ver que al inciar la aplicación del SoC ahora obtebnemos una salida con unos detalles un poco diferentes. En el siguiente cuadro podmeos ver la salida inicial pbtenida del SoC antes de realizar el enlace entre ambos puntos. 
+
+```BASH
+I (725) app: Starting provisioning
+I (735) app: Development mode: using hard coded salt
+I (735) app: Development mode: using hard coded verifier
+I (745) phy_init: phy_version 4771,450c73b,Aug 16 2023,11:03:10
+I (825) wifi:mode : sta (24:0a:c4:ea:36:b4)
+I (825) wifi:enable tsf
+I (835) wifi:mode : sta (24:0a:c4:ea:36:b4) + softAP (24:0a:c4:ea:36:b5)
+I (835) wifi:Total power save buffer number: 16
+I (835) wifi:Init max length of beacon: 752/752
+I (845) wifi:Init max length of beacon: 752/752
+I (845) esp_netif_lwip: DHCP server started on interface WIFI_AP_DEF with IP: 192.168.4.1
+I (845) wifi:Total power save buffer number: 16
+I (865) esp_netif_lwip: DHCP server started on interface WIFI_AP_DEF with IP: 192.168.4.1
+I (865) wifi_prov_mgr: Provisioning started with service name : PROV_EA36B4 
+I (875) app: Provisioning started
+I (885) app: Scan this QR code from the provisioning application for Provisioning.
+I (885) QRCODE: Encoding below text with ECC LVL 0 & QR Code Version 10
+I (895) QRCODE: {"ver":"v1","name":"PROV_EA36B4","username":"wifiprov","pop":"abcd1234","transport":"softap"}
+                                          
+  █▀▀▀▀▀█ ▄▄█  ███   ▀▀ ▄█ ▀███ █▀▀▀▀▀█   
+  █ ███ █ ▀▄  ▄ ███▀ █▄ ███  █▀ █ ███ █   
+  █ ▀▀▀ █ █▀█ █▀▀█▀ ▄▄▀▀▄▀▄▀██  █ ▀▀▀ █   
+  ▀▀▀▀▀▀▀ █ █▄▀ ▀ █▄▀ ▀▄▀▄▀ ▀▄▀ ▀▀▀▀▀▀▀   
+  █▀▄█  ▀▀▄▄ ████ ▀▄▀ ▀█▄ ███   ██▀▄▀█▄   
+  ▀▀   ▀▀ ▄█ ███▄  ▀▀█▀█▀▄██    ▄█▄▄▀ █   
+   █▄▀ █▀▀  ██ ▀ ▀▄▀▀▄███ █▀▄▄▀▄█  █  █   
+   ▀▀▀▄▀▀▄ ▄██ ▄▄ ▀█  ▀█▀█ █▄ ███▀ ▄  ▀   
+   ▀▄▀█▀▀▄▀   █▄   ▀▀▀▀▀ ██▄▄ ▀█▀▀▄▄▀▀█   
+  ▀  █▄▀▀▀▄██▀█ ▀▄▀█▀▄▀▄▄ ▄ ▄ ▄▄▀██ ▄██   
+  ▄▀█▄▀█▀  █▄▄ █  ▄▄▄ ▄█▀▀▄██   ▀ ▀▀  █   
+  ██▀ █▄▀▄██▀  ▄█    █▄█ ▄▀▄█▄▀ █▄█▄▀▀█   
+   █▀▄▄▀▀ ▀▀█▄██▄  █▄▄██  ▀█ ▄▀█▀▄ █▄▄█   
+  ▀▄▄▄▀█▀▄▀ ▄ █▄█ ▄▄▀  ▄▀▀▀█▀▄▄ ▄ ██▀▀█   
+  ▀▀ ▀▀▀▀▀█▄▄▀ ▀█▀▄▀ ▀█▀▀█ ▄▄▄█▀▀▀█▄▀▄▄   
+  █▀▀▀▀▀█ ▀██▄ █ ▄█▄█▄▀█  ▀ █ █ ▀ █▄▄▀▀   
+  █ ███ █ ▄▀ ██▄▀ ▄  ▀▀█▄▀▀▀▀ █▀▀██ ▄     
+  █ ▀▀▀ █ ▄▀ ███▀ ▀▀ ▀█▄  ▄█ ▀▀█▀▄▀▄ ▀▀   
+  ▀▀▀▀▀▀▀ ▀▀ ▀  ▀  ▀  ▀▀▀ ▀▀ ▀▀   ▀  ▀▀   
+                                          
+
+I (1165) app: If QR code is not visible, copy paste the below URL in a browser.
+https://espressif.github.io/esp-jumpstart/qrcode.html?data={"ver":"v1","name":"PROV_EA36B4","username":"wifiprov","pop":"abcd1234","transport":"softap"}
+
+```
+
+Si analizamos la salida obtenida, podemos ver las siguientes diferencias con respecto al modo de provisionamiento mediante BLE:
+ - Se india que se ha iniciaddo el WIFI en modo convinado con las direcciones MAC  **24:0a:c4:ea:36:b4** para Estación y **24:0a:c4:ea:36:b5** para Punto de Acceso.
+ - Se ha inciiado el protocolo DHCP en la interfáz **WIFI_AP_DEF** con dirección IP **192.168.4.1**.
+ - También nos indica el modo de cofificación utilizado, siendo en este caso **ECC LVL 0 & QR Code Version 10**.
+
+ En la 
+
+********
+
+Una vez realizada la conexión entre los puntos y aportadas las credenciales para la realzaición del provisionamiento, podemso ver como la salida obtenida desde el SoC sigue los mismos pasos en la conexión mediante BLE. Esto incluye tanto la conexión con al red WIFI cuyos parámetros de acceso hemos provisionado como la desconexión del programa de provisionamiento una vez la conexión se ha llevado a cabo correctamente.
+
+En el siguiente cuadro podemos ver la salida obtenida desde el SoC una vez se ha llevado a cabo el provisionamiento:
+
+```BASH
+I (29965) wifi:new:<1,0>, old:<1,1>, ap:<1,1>, sta:<0,0>, prof:1
+I (29965) wifi:station: 66:9f:f1:96:ee:8c join, AID=1, bgn, 20
+I (29965) app: SoftAP transport: Connected!
+I (30085) wifi:<ba-add>idx:2 (ifx:1, 66:9f:f1:96:ee:8c), tid:0, ssn:0, winSize:64
+I (30205) esp_netif_lwip: DHCP server assigned IP to a client, IP is: 192.168.4.2
+I (30855) security2: Using salt and verifier to generate public key...
+I (31175) app: Secured session established!
+I (66435) app: Received Wi-Fi credentials
+        SSID     : RPI1_test
+        Password : test1234
+I (70285) wifi:primary chan differ, old=1, new=1, start CSA timer
+I (70285) wifi:new:<1,1>, old:<1,0>, ap:<1,1>, sta:<1,0>, prof:1
+I (72435) wifi:state: init -> auth (b0)
+I (72445) wifi:state: auth -> assoc (0)
+I (72495) wifi:state: assoc -> run (10)
+I (72515) wifi:connected with RPI1_test, aid = 2, channel 1, BW20, bssid = ca:df:8d:9a:30:e2
+I (72515) wifi:security: WPA2-PSK, phy: bgn, rssi: -34
+I (72535) wifi:pm start, type: 1
+
+I (72545) wifi:AP's beacon interval = 102400 us, DTIM period = 2
+I (72555) wifi:<ba-add>idx:0 (ifx:0, ca:df:8d:9a:30:e2), tid:0, ssn:0, winSize:64
+I (73545) app: Connected with IP Address:192.168.43.198
+I (73545) esp_netif_handlers: sta ip: 192.168.43.198, mask: 255.255.255.0, gw: 192.168.43.1
+I (73545) wifi_prov_mgr: STA Got IP
+I (73545) app: Provisioning successful
+I (73555) app: Hello World!
+I (73685) wifi:station: 66:9f:f1:96:ee:8c leave, AID = 1, bss_flags is 134243, bss:0x3ffca644
+I (73685) wifi:new:<1,0>, old:<1,1>, ap:<1,1>, sta:<1,0>, prof:1
+I (73695) wifi:<ba-del>idx:2, tid:0
+I (73695) app: SoftAP transport: Disconnected!
+I (74555) app: Hello World!
+I (74745) wifi:mode : sta (24:0a:c4:ea:36:b4)
+I (74755) wifi_prov_mgr: Provisioning stopped
+I (75555) app: Hello World!
+I (76555) app: Hello World!
+I (77555) app: Hello World!
+I (78555) app: Hello World!
+```
+
+## Aprovisionamiento mediante SoftAp con seguridad
+
