@@ -1,7 +1,7 @@
 {
     "folders": [
         {
-            "path": "wifiProv"
+            "path": "wifi-prov-mgr"
         },
         {
             "path": "power_save"
