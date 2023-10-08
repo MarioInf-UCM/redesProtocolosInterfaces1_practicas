@@ -9,7 +9,7 @@ A continuación realizaremos dos ejecuciones de nuestra herramienta de provision
 
 ## Envío de credenciales sin seguridad
 
-Para llevar a cabo el provisionamiento primero necesitaremos ejecutar el programa de ejemplo **wifi-prov-mgr** en nuestro SoC, para lo cual deberemos configurar su uso para que utilice el modo de provisionamiento mediante AP y la versión de seguridad sin cifrado. En la siguiente imagen podemos ver la configuración dle SoC utilizada.
+Para llevar a cabo el provisionamiento primero necesitaremos ejecutar el programa de ejemplo **wifi-prov-mgr** en nuestro SoC, para lo cual deberemos configurar su uso para que utilice el modo de provisionamiento mediante AP y la versión de seguridad sin cifrado. En la siguiente imagen podemos ver la configuración del SoC utilizada.
 
 <img src="images/configuracionSoftAP_SOC_sinSeguridad.png" alt="drawing" style="width:30%; 
     display: block;
@@ -105,14 +105,25 @@ En la siguiente imagen podemos ver, no solo los filtros empleados, sino también
 
 ## Envío de credenciales con seguridad
 
+Al igual que en el caso anterior, para llevar a cabo el provisionamiento primero deberemos configurar el SoC para que utilice el modo mediante AP y la versión de seguridad sin cifrado. En la siguiente imagen podemos ver la configuración del SoC utilizada.
 
+<img src="images/configuracionSoftAP_SOC_conSeguridad.png" alt="drawing" style="width:50%; 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    margin-botton: 1%;
+"/>
 
-
+En esta ocasión no tenemos nada de modificar en el código y únicamente necesitaremos ejecutar la herramienta de provisionamiento indicado el modo de seguridad 1, el cual utiliza un cifrado sobre las credenciales enviadas al SoC. En los siguientes cuadros podemos ver la ejecución de la herramienta de provisionamiento y el resultado devuelto por al misma, respectivamente:
 
 CON CIFRADO
 
 ```BASH
  python esp_prov.py --transport softap --service_name "192.168.4.1:80" --sec_ver 1 --ssid RPI1_test --passphrase test1234
+```
+
+```BASH
 ++++ Connecting to 192.168.4.1:80++++
 Proof of Possession required: 
 
@@ -130,8 +141,15 @@ Proof of Possession required:
 ==== Provisioning was successful ====
 ```
 
+Este proceso debe volver a ser capturado mediante la herramienta **wireshark** de la misma forma que lo hemos realizado en el apartado anterior. En la siguiente imagen podemos ver como, en este caso, las credenciales enviadas al SoC son cifradas aportando una capa de seguridad sobre la red WIFI a la cual se unirá el sistema provisionado:
 
-
+<img src="images/wireshark_capturaConCifrado.png" alt="drawing" style="width:100%; 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    margin-botton: 1%;
+"/>
 
 
 
