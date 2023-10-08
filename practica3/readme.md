@@ -446,3 +446,342 @@ I (52225) app: Hello World!
 I (53225) app: Hello World!
 I (54225) app: Hello World!
 ```
+
+# Modos de ahorro de consumo WiFi
+
+En el proyecto power_save define la macro DEFAULT_PS_MODE en función de los parámetros recibidos del menuconfig. Por defecto está configurado con el valor de minimum modem (WIFI_PS_MIN_MODEM).
+
+Para realizar las pruebas de latencia, se ha utilizado un movil como punto de acceso conectando tanto la placa ESP32 como el portatil para realizarl el ping (20 paquetes).
+
+## Power save mode: none
+
+Output de ESP32:
+
+```BASH
+I (0) cpu_start: App cpu up.
+I (440) cpu_start: Pro cpu start user code
+I (440) cpu_start: cpu freq: 80000000 Hz
+I (440) cpu_start: Application information:
+I (445) cpu_start: Project name:     power_save
+I (450) cpu_start: App version:      f3fb24f-dirty
+I (456) cpu_start: Compile time:     Oct  8 2023 11:36:17
+I (462) cpu_start: ELF file SHA256:  ee9cd867f8852bbd...
+I (468) cpu_start: ESP-IDF:          v5.1.1
+I (472) cpu_start: Min chip rev:     v0.0
+I (477) cpu_start: Max chip rev:     v3.99
+I (482) cpu_start: Chip rev:         v1.0
+I (487) heap_init: Initializing. RAM available for dynamic allocation:
+I (494) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM
+I (500) heap_init: At 3FFB7B58 len 000284A8 (161 KiB): DRAM
+I (506) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+I (513) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+I (519) heap_init: At 40099974 len 0000668C (25 KiB): IRAM
+I (527) spi_flash: detected chip: generic
+I (530) spi_flash: flash io: dio
+W (534) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (548) sleep: Configure to isolate all GPIO pins in sleep state
+I (554) sleep: Enable automatic switching of GPIO sleep configuration
+I (573) app_start: Starting scheduler on CPU0
+I (573) app_start: Starting scheduler on CPU1
+I (573) main_task: Started on CPU0
+I (578) main_task: Calling app_main()
+I (697) pm: Frequency switching config: CPU_MAX: 80, APB_MAX: 80, APB_MIN: 10, Light sleep: ENABLED
+I (704) wifi:wifi driver task: 3ffbfd30, prio:23, stack:6656, core=0
+I (768) wifi:wifi firmware version: ce9244d
+I (769) wifi:wifi certification version: v7.0
+I (769) wifi:config NVS flash: enabled
+I (769) wifi:config nano formating: disabled
+I (773) wifi:Init data frame dynamic rx buffer num: 32
+I (778) wifi:Init management frame dynamic rx buffer num: 32
+I (783) wifi:Init management short buffer num: 32
+I (787) wifi:Init dynamic tx buffer num: 32
+I (792) wifi:Init static rx buffer size: 1600
+I (796) wifi:Init static rx buffer num: 10
+I (799) wifi:Init dynamic rx buffer num: 32
+I (804) wifi_init: rx ba win: 6
+I (807) wifi_init: tcpip mbox: 32
+I (811) wifi_init: udp mbox: 6
+I (814) wifi_init: tcp mbox: 6
+I (818) wifi_init: tcp tx win: 5744
+I (822) wifi_init: tcp rx win: 5744
+I (826) wifi_init: tcp mss: 1440
+I (830) wifi_init: WiFi IRAM OP enabled
+I (835) wifi_init: WiFi RX IRAM OP enabled
+I (840) wifi_init: WiFi SLP IRAM OP enabled
+I (851) phy_init: phy_version 4670,719f9f6,Feb 18 2021,17:07:07
+I (975) wifi:mode : sta (24:0a:c4:ea:28:c0)
+I (976) wifi:enable tsf
+I (979) power_save: esp_wifi_set_ps().
+I (984) wifi:Set ps type: 0, coexist: 0
+
+I (984) main_task: Returned from app_main()
+I (990) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1
+I (993) wifi:state: init -> auth (b0)
+I (999) wifi:state: auth -> assoc (0)
+I (1006) wifi:state: assoc -> run (10)
+I (1028) wifi:connected with WIFIAP, aid = 1, channel 6, BW20, bssid = b2:08:43:4c:40:bf
+I (1029) wifi:security: WPA2-PSK, phy: bgn, rssi: -39
+I (1041) wifi:pm start, type: 0
+
+I (1046) wifi:<ba-add>idx:0 (ifx:0, b2:08:43:4c:40:bf), tid:0, ssn:0, winSize:64
+I (1121) wifi:AP's beacon interval = 102400 us, DTIM period = 2
+I (2047) esp_netif_handlers: sta ip: 192.168.223.196, mask: 255.255.255.0, gw: 192.168.223.152
+I (2048) power_save: got ip: 192.168.223.196
+```
+
+Conectando con el portatil a la misma wifi y realizando el ping obtenemos una media de 8ms.
+```BASH
+Haciendo ping a 192.168.223.196 con 32 bytes de datos:
+Respuesta desde 192.168.223.196: bytes=32 tiempo=9ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=8ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=7ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=4ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=7ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=24ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=6ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=7ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=4ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=4ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=4ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=30ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=8ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=9ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=7ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=5ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=7ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=10ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=8ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=7ms TTL=255
+
+Estadísticas de ping para 192.168.223.196:
+    Paquetes: enviados = 20, recibidos = 20, perdidos = 0
+    (0% perdidos),
+Tiempos aproximados de ida y vuelta en milisegundos:
+    Mínimo = 4ms, Máximo = 30ms, Media = 8ms
+```
+
+## Power save mode: minimum modem
+
+Output de ESP32:
+
+```BASH
+I (0) cpu_start: App cpu up.
+I (440) cpu_start: Pro cpu start user code
+I (440) cpu_start: cpu freq: 80000000 Hz
+I (440) cpu_start: Application information:
+I (445) cpu_start: Project name:     power_save
+I (450) cpu_start: App version:      f3fb24f-dirty
+I (456) cpu_start: Compile time:     Oct  8 2023 11:44:50
+I (462) cpu_start: ELF file SHA256:  85ca1087ba51f91c...
+I (468) cpu_start: ESP-IDF:          v5.1.1
+I (473) cpu_start: Min chip rev:     v0.0
+I (477) cpu_start: Max chip rev:     v3.99
+I (482) cpu_start: Chip rev:         v1.0
+I (487) heap_init: Initializing. RAM available for dynamic allocation:
+I (494) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM
+I (500) heap_init: At 3FFB7B58 len 000284A8 (161 KiB): DRAM
+I (506) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+I (513) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+I (519) heap_init: At 40099974 len 0000668C (25 KiB): IRAM
+I (527) spi_flash: detected chip: generic
+I (530) spi_flash: flash io: dio
+W (534) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (548) sleep: Configure to isolate all GPIO pins in sleep state
+I (554) sleep: Enable automatic switching of GPIO sleep configuration
+I (573) app_start: Starting scheduler on CPU0
+I (573) app_start: Starting scheduler on CPU1
+I (573) main_task: Started on CPU0
+I (578) main_task: Calling app_main()
+I (697) pm: Frequency switching config: CPU_MAX: 80, APB_MAX: 80, APB_MIN: 10, Light sleep: ENABLED
+I (704) wifi:wifi driver task: 3ffbfd30, prio:23, stack:6656, core=0
+I (768) wifi:wifi firmware version: ce9244d
+I (769) wifi:wifi certification version: v7.0
+I (769) wifi:config NVS flash: enabled
+I (769) wifi:config nano formating: disabled
+I (773) wifi:Init data frame dynamic rx buffer num: 32
+I (778) wifi:Init management frame dynamic rx buffer num: 32
+I (783) wifi:Init management short buffer num: 32
+I (787) wifi:Init dynamic tx buffer num: 32
+I (792) wifi:Init static rx buffer size: 1600
+I (796) wifi:Init static rx buffer num: 10
+I (799) wifi:Init dynamic rx buffer num: 32
+I (804) wifi_init: rx ba win: 6
+I (807) wifi_init: tcpip mbox: 32
+I (811) wifi_init: udp mbox: 6
+I (814) wifi_init: tcp mbox: 6
+I (818) wifi_init: tcp tx win: 5744
+I (822) wifi_init: tcp rx win: 5744
+I (826) wifi_init: tcp mss: 1440
+I (830) wifi_init: WiFi IRAM OP enabled
+I (835) wifi_init: WiFi RX IRAM OP enabled
+I (840) wifi_init: WiFi SLP IRAM OP enabled
+I (851) phy_init: phy_version 4670,719f9f6,Feb 18 2021,17:07:07
+I (975) wifi:mode : sta (24:0a:c4:ea:28:c0)
+I (977) wifi:enable tsf
+I (980) power_save: esp_wifi_set_ps().
+I (984) wifi:Set ps type: 1, coexist: 0
+
+I (984) main_task: Returned from app_main()
+I (993) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1
+I (995) wifi:state: init -> auth (b0)
+I (1001) wifi:state: auth -> assoc (0)
+I (1011) wifi:state: assoc -> run (10)
+I (1045) wifi:connected with WIFIAP, aid = 1, channel 6, BW20, bssid = b2:08:43:4c:40:bf
+I (1046) wifi:security: WPA2-PSK, phy: bgn, rssi: -33
+I (1058) wifi:pm start, type: 1
+
+I (1064) wifi:<ba-add>idx:0 (ifx:0, b2:08:43:4c:40:bf), tid:0, ssn:0, winSize:64
+I (1070) wifi:AP's beacon interval = 102400 us, DTIM period = 2
+I (2070) esp_netif_handlers: sta ip: 192.168.223.196, mask: 255.255.255.0, gw: 192.168.223.152
+I (2071) power_save: got ip: 192.168.223.196
+```
+
+En este caso vemos como la media sube a 121ms.
+```BASH
+Haciendo ping a 192.168.223.196 con 32 bytes de datos:
+Respuesta desde 192.168.223.196: bytes=32 tiempo=309ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=103ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=110ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=121ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=132ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=134ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=148ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=141ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=157ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=176ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=173ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=118ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=206ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=28ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=41ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=70ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=50ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=58ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=71ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=82ms TTL=255
+
+Estadísticas de ping para 192.168.223.196:
+    Paquetes: enviados = 20, recibidos = 20, perdidos = 0
+    (0% perdidos),
+Tiempos aproximados de ida y vuelta en milisegundos:
+    Mínimo = 28ms, Máximo = 309ms, Media = 121ms
+```
+
+## Power save mode: maximum modem
+
+Output de ESP32:
+
+```BASH
+I (0) cpu_start: App cpu up.
+I (440) cpu_start: Pro cpu start user code
+I (440) cpu_start: cpu freq: 80000000 Hz
+I (440) cpu_start: Application information:
+I (445) cpu_start: Project name:     power_save
+I (450) cpu_start: App version:      f3fb24f-dirty
+I (456) cpu_start: Compile time:     Oct  8 2023 11:51:53
+I (462) cpu_start: ELF file SHA256:  bd372854e03d4a77...
+I (468) cpu_start: ESP-IDF:          v5.1.1
+I (473) cpu_start: Min chip rev:     v0.0
+I (477) cpu_start: Max chip rev:     v3.99
+I (482) cpu_start: Chip rev:         v1.0
+I (487) heap_init: Initializing. RAM available for dynamic allocation:
+I (494) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM
+I (500) heap_init: At 3FFB7B58 len 000284A8 (161 KiB): DRAM
+I (506) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+I (513) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+I (519) heap_init: At 40099974 len 0000668C (25 KiB): IRAM
+I (527) spi_flash: detected chip: generic
+I (530) spi_flash: flash io: dio
+W (534) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (548) sleep: Configure to isolate all GPIO pins in sleep state
+I (554) sleep: Enable automatic switching of GPIO sleep configuration
+I (573) app_start: Starting scheduler on CPU0
+I (573) app_start: Starting scheduler on CPU1
+I (573) main_task: Started on CPU0
+I (578) main_task: Calling app_main()
+I (697) pm: Frequency switching config: CPU_MAX: 80, APB_MAX: 80, APB_MIN: 10, Light sleep: ENABLED
+I (704) wifi:wifi driver task: 3ffbfd30, prio:23, stack:6656, core=0
+I (768) wifi:wifi firmware version: ce9244d
+I (768) wifi:wifi certification version: v7.0
+I (769) wifi:config NVS flash: enabled
+I (769) wifi:config nano formating: disabled
+I (773) wifi:Init data frame dynamic rx buffer num: 32
+I (777) wifi:Init management frame dynamic rx buffer num: 32
+I (783) wifi:Init management short buffer num: 32
+I (787) wifi:Init dynamic tx buffer num: 32
+I (791) wifi:Init static rx buffer size: 1600
+I (795) wifi:Init static rx buffer num: 10
+I (799) wifi:Init dynamic rx buffer num: 32
+I (804) wifi_init: rx ba win: 6
+I (807) wifi_init: tcpip mbox: 32
+I (811) wifi_init: udp mbox: 6
+I (814) wifi_init: tcp mbox: 6
+I (818) wifi_init: tcp tx win: 5744
+I (822) wifi_init: tcp rx win: 5744
+I (826) wifi_init: tcp mss: 1440
+I (830) wifi_init: WiFi IRAM OP enabled
+I (835) wifi_init: WiFi RX IRAM OP enabled
+I (839) wifi_init: WiFi SLP IRAM OP enabled
+I (850) phy_init: phy_version 4670,719f9f6,Feb 18 2021,17:07:07
+I (975) wifi:mode : sta (24:0a:c4:ea:28:c0)
+I (976) wifi:enable tsf
+I (980) power_save: esp_wifi_set_ps().
+I (983) wifi:Set ps type: 2, coexist: 0
+
+I (984) main_task: Returned from app_main()
+I (993) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1
+I (995) wifi:state: init -> auth (b0)
+I (1000) wifi:state: auth -> assoc (0)
+I (1006) wifi:state: assoc -> run (10)
+I (1027) wifi:connected with WIFIAP, aid = 1, channel 6, BW20, bssid = b2:08:43:4c:40:bf
+I (1028) wifi:security: WPA2-PSK, phy: bgn, rssi: -34
+I (1040) wifi:pm start, type: 2
+
+I (1043) wifi:<ba-add>idx:0 (ifx:0, b2:08:43:4c:40:bf), tid:0, ssn:0, winSize:64
+I (1096) wifi:AP's beacon interval = 102400 us, DTIM period = 2
+I (2051) esp_netif_handlers: sta ip: 192.168.223.196, mask: 255.255.255.0, gw: 192.168.223.152
+I (2052) power_save: got ip: 192.168.223.196
+```
+
+En este caso vemos como la media sube a 209ms.
+```BASH
+Haciendo ping a 192.168.223.196 con 32 bytes de datos:
+Respuesta desde 192.168.223.196: bytes=32 tiempo=600ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=218ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=125ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=333ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=249ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=183ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=58ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=190ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=196ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=112ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=324ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=134ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=148ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=64ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=267ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=178ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=295ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=301ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=106ms TTL=255
+Respuesta desde 192.168.223.196: bytes=32 tiempo=110ms TTL=255
+
+Estadísticas de ping para 192.168.223.196:
+    Paquetes: enviados = 20, recibidos = 20, perdidos = 0
+    (0% perdidos),
+    Mínimo = 58ms, Máximo = 600ms, Media = 209ms
+Tiempos aproximados de ida y vuelta en milisegundos:
+```
+
+## Grafica latencia
+
+<img src="images/grafica_latencia.png" alt="drawing" style="width:100%; 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    margin-botton: 1%;
+"/>
+
+Como se puede observar en la gráfica, a mayor ahorro de energía mayor latencia en la comunicación.

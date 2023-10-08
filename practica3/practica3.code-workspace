@@ -4,6 +4,9 @@
             "path": "wifiProv"
         },
         {
+            "path": "power_save"
+        },
+        {
             "path": "."
         },
         {
