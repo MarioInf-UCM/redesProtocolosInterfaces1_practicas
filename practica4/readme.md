@@ -34,7 +34,6 @@ Una vez se ha llegado a la convergencia de la red, en la siguiente imagen podemo
 - <span style="color: #DAE8FC;">Nodo intermedio u hoja de la red Mesh.</span>
 - <span style="color: #B3B3B3;">Nodo de la red Mesh correspondiente a nuestro equipo.</span>
 
-
 <img src="resources/images/topologiaMesh1_diagrama.jpg" alt="drawing" style="width:60%; 
     display: block;
     margin-left: auto;
@@ -44,13 +43,28 @@ Una vez se ha llegado a la convergencia de la red, en la siguiente imagen podemo
 "/>
 
 
-RECONEXIÓN
+# Reconexión de la red Mesh tras la caída del nodo raíz
+
+Tras la realización de la convergencia anterior, se va a llevar a cabo la desconexión forzosa del nodo raíz, haciendo que la red tenga que volver a debatir un nuevo nodo que supla su lugar proporcionando acceso al router WIFI. Basta decir que las direcciones MAC asignadas por cada uno de los nodos permanecerán invariantes respecto a al red anterior, por lo que únicamente tenemos que prestar atención a las nuevas conexiones que conformarán la estructura de la nueva red.
+
+En la siguiente imagen podemos ver la salida de la ejecución que nos indica que en la nueva red estamos ocupando la capa 2 y que nos hemos conectado al nodo que tiene por dirección AMC de punto de acceso 24:0a:c4:ea:3c:a9, es decir, el nodo raíz.
+
 ```BASH
 I (1029682) mesh_main: layer:2, rtableSize:1, NODE
 W (1030752) wifi:(->sleep)busy, waked:1, dream:0, sleep:0
 W (1031852) wifi:(->sleep)busy, waked:1, dream:0, sleep:0
 W (1031912) mesh_main: [#RX:49/44][L:2] parent:24:0a:c4:ea:3c:a9, receive from 24:0a:c4:ea:3c:a8, size:1460, heap:149688, flag:0[err:0x0, proto:0, tos:0]
 ```
+
+En la siguiente imagen podemos ver la estructura de la nueva red Mesh, una vez que esta ya ha llegado a la convergencia. Notar que el código de colores utilizado es el mismo que en el apartado anterior:
+
+<img src="resources/images/topologiaMesh2_diagrama.jpg" alt="drawing" style="width:60%; 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    margin-botton: 1%;
+"/>
 
 GRUPOS
 ```BASH
