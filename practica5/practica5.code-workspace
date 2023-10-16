@@ -1,7 +1,7 @@
 {
     "folders": [
         {
-            "path": "internal_communication"
+            "path": "gatt_server_service_table"
         },
         {
             "path": "."
