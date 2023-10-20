@@ -4,6 +4,9 @@ En la presente práctica vamos a llevar a cabo la implementación de un servidor
 - **El servidor BLE:** Será implementado en nuestra SoC STM32 mediante el ejemplo **examples/bluetooth/bluedroid/ble/gatt_server_service_table**.
 - **El cliente BLE:** Será desarrollado mediante un equipo de sobremesa Linux a través de la herramienta **gatttool** en línea de comandos.
 
+
+
+
 <br />
 
 ## Escaneado de dispositivos Bluetooth disponibles
@@ -44,7 +47,7 @@ I (1053) GATTS_TABLE_DEMO: SERVICE_START_EVT, status 0, service_handle 40
 I (1063) GATTS_TABLE_DEMO: advertising start successfully
 ```
 
-Una vez hecho esto, ejecutaremos un escaneo de dispositivos Bluetooth con la herramienta **hcitool** con el objetivo de verificar que nuestro dispositivo se encuentra corriendo adecuadamente. Para lo cual ejecutaremos la la orden **sudo hcitool lescan | grep "RPI1"**, filtrando el resultado para obtener así un resultado más limpio. 
+Una vez hecho esto, ejecutaremos un escaneo de dispositivos Bluetooth con la herramienta **hcitool** con el objetivo de verificar que nuestro dispositivo se encuentra corriendo adecuadamente. Para lo cual ejecutaremos la la orden `sudo hcitool lescan | grep "RPI1"`, filtrando el resultado para obtener así un resultado más limpio. 
 
 Recordar que para poder llevar a cabo el escaneo correctamente, nuestro equipo tienen que tener activada la tecnología Bluetooth. En la siguiente imagen podemos ver como se detecta correctamente los mensajes de anuncio de nuestro SoC y la dirección MAC con el que este se está anunciando.
 
@@ -53,9 +56,24 @@ debian12:~$ sudo hcitool lescan | grep "RPI1"
 24:0A:C4:EA:36:B6 ESP_GATTS_PEPE
 ```
 
+
+
 <br />
 
 ## Interaccionando con nuestro servidor GATT
+
+En el presente apartado realizaremos diferentes interacciones con nuestro servidor GATT mediante el uso de la herramienta en línea de comandos **gatttol**. En el caso de no tenerla instalada previamente, en el siguiente (enlace)[https://command-not-found.com/gatttool] podemos ver un breve resumen de las instrucciones para llevar a cabo la instalación en las principales distribuciones Linux.
+
+Para un mejor entendimiento de las acciones realizadas, dividiremos el presente apartado en pasos sucesivos.
+
+
+
+
+<br />
+
+### PASO 1: Establecimiento de conexión
+
+Una vez instalada la herramienta, realizaremos la conexión con nuestro servidor GATT mediante la orden `gatttool -b "direccionMAC" -I`, cuya salida podremos en el siguiente cuadro, donde se ha llevado a cabo la conexión de forma exitosa:
 
 ```BASH
 mario@debian12:~$ gatttool -b 24:0A:C4:EA:36:B6 -I
@@ -64,6 +82,13 @@ Attempting to connect to 24:0A:C4:EA:36:B6
 Connection successful
 [24:0A:C4:EA:36:B6][LE]> 
 ```
+
+De la misma manera, cuando llevamos acabo la conexión también obtenemos una notificación en nuestro servidor GATT, en el cual podemos ver la siguiente salida, la cual nos notifica que se hay un nuevo cliente conectado:
+
+TODO****
+
+Una vez realizado esto, podemos determinar que la conexión ha sido establecida de exitosamente.
+
 
 
 TAREA 2
