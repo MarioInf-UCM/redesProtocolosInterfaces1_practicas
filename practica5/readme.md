@@ -93,7 +93,9 @@ Connection successful
 
 De la misma manera, cuando llevamos acabo la conexión también obtenemos una notificación en nuestro servidor GATT, en el cual podemos ver la siguiente salida, la cual nos notifica que se hay un nuevo cliente conectado:
 
-TODO****
+```BASH
+**TODO**********
+```
 
 Una vez realizado esto, podemos determinar que la conexión ha sido establecida de exitosamente, por lo que ahora podremos examinar todas y cada una de las características disponibles en nuestro servidor GATT mediante la orden `characteristics`, enviada desde el interprete de comandos en nuestro sistema. En el siguiente cuadro podemos ver una salida de la ejecución de dicha orden:
 
@@ -130,21 +132,40 @@ Teniendo esto en cuenta y en base a la tabla de características devueltas anter
 
 <br />
 
-### PASO 2:
+### PASO 2: Lectura y escritura de una característica
+
+>Tarea Básica
+>
+>Obtén los datos de lectura de la característica de medición del valor de monitorización de ritmo cardíaco. ¿Cuáles son? Deberías observar un valor de retorno de cuatro bytes con valor 0x00. Estos valores corresponden a los de la variable char_value de tu código. Modifícalos, recompila y vuelve a flashear el código. ¿Han variado?
+
+A continuación vamos a leer el valor asociado a la característica **Heart Rate Value** mediante el código de su manejador, para lo cual utilizaremos la instrucción `char-read-hnd "codigoManejador"`. Teniendo en cuenta que el valor de esta característica esta asociada a la variable **char_value** de nuestro código, deberemos obtener el mismo resultado a la hora de llevar a cabo la consulta. En los siguientes cuadros podemos ver el valor de dicha variable en el código y el resultado obtenido al ejecutar la instrucción desde nuestro sistema, respectivamente:
 
 
-
-
-
-
-
-
-
-
-
+```C
+static const uint8_t char_value[4]                 = {0x11, 0x22, 0x33, 0x44};
+```
 ```BASH
 [24:0A:C4:EA:36:B6][LE]> char-read-hnd 0x002A
 Characteristic value/descriptor: 11 22 33 44 
+```
+
+Al llevar a cabo esto, nuestro SoC detecta la petición de lectura realizada y nos informa de ello mediante la salida del puerto serie. En el siguiente cuadro podemos ver dicha salida:
+
+```BASH
+**TODO**********
+```
+
+>Tarea Básica
+>
+>Intenta ahora escribir en la anterior característica. Para ello, utiliza el comando char-write-cmd handler valor , siendo valor, por ejemplo, 11223344 .
+
+Antes de pasar al escribir en la característica, vamos a modificar el valor asociada a la misma directamente desde el fichero **gatts_table_creat_demo.c** y comprobar que ese se ha actualizado correctamente al llevar a cabo una nueva solicitud de lectura. Pera esto será necesario volver a establecer la conexión con nuestro servidor.
+
+En los siguientes cuadros podemos el nuevo valor asociado a la variable y como este coincide con la respuesta obtenida al volver a llevar a cabo la petición de lectura desde nuestro sistema cliente:
+
+
+```C
+static const uint8_t char_value[4]                 = {0x55, 0x66, 0x77, 0x88};
 ```
 
 ```BASH
@@ -156,11 +177,18 @@ Connection successful
 Characteristic value/descriptor: 55 66 77 88 
 ```
 
+A continuación vamos a realizar la escritura del valor asociado a dicha característica mediante la instrucción `char-write-cmd "manejador" "nuevoValor"`, siendo el valor utilizado como ejemplo **12345678**. En los siguientes cuadros podemos ver tanto la respuesta generado por nuestro sistema cliente como la notificación que nos muestra el servidor GATT al recibir la petición de escritura, respectivamente:
+
 ```BASH
 [24:0A:C4:EA:36:B6][LE]> char-write-cmd 0x002A 12345678
 [24:0A:C4:EA:36:B6][LE]> char-read-hnd 0x002A
 Characteristic value/descriptor: 12 34 56 78 
 ```
+
+```BASH
+**TODO**********
+```
+
 
 TAREA 4
 
