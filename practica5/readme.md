@@ -94,7 +94,12 @@ Connection successful
 De la misma manera, cuando llevamos acabo la conexión también obtenemos una notificación en nuestro servidor GATT, en el cual podemos ver la siguiente salida, la cual nos notifica que se hay un nuevo cliente conectado:
 
 ```BASH
-**TODO**********
+I (153232) GATTS_TABLE_DEMO: advertising start successfully
+I (158682) GATTS_TABLE_DEMO: ESP_GATTS_CONNECT_EVT, conn_id = 0
+I (158682) GATTS_TABLE_DEMO: 7e 67 4a 19 24 4d
+I (159082) GATTS_TABLE_DEMO: update connection params status = 0, min_int = 16, max_int = 32,conn_int = 24,latency = 0, timeout = 400
+I (159362) GATTS_TABLE_DEMO: update connection params status = 0, min_int = 0, max_int = 0,conn_int = 6,latency = 0, timeout = 500
+I (159562) GATTS_TABLE_DEMO: update connection params status = 0, min_int = 0, max_int = 0,conn_int = 24,latency = 0, timeout = 400
 ```
 
 Una vez realizado esto, podemos determinar que la conexión ha sido establecida de exitosamente, por lo que ahora podremos examinar todas y cada una de las características disponibles en nuestro servidor GATT mediante la orden `characteristics`, enviada desde el interprete de comandos en nuestro sistema. En el siguiente cuadro podemos ver una salida de la ejecución de dicha orden:
@@ -152,7 +157,7 @@ Characteristic value/descriptor: 11 22 33 44
 Al llevar a cabo esto, nuestro SoC detecta la petición de lectura realizada y nos informa de ello mediante la salida del puerto serie. En el siguiente cuadro podemos ver dicha salida:
 
 ```BASH
-**TODO**********
+I (283472) GATTS_TABLE_DEMO: ESP_GATTS_READ_EVT
 ```
 
 >Tarea Básica
@@ -186,7 +191,8 @@ Characteristic value/descriptor: 12 34 56 78
 ```
 
 ```BASH
-**TODO**********
+I (409322) GATTS_TABLE_DEMO: GATT_WRITE_EVT, handle = 42, value len = 4, value :
+I (409322) GATTS_TABLE_DEMO: 12 34 56 78
 ```
 
 
@@ -259,5 +265,17 @@ Characteristic value/descriptor: 12 34
 Además de ver como la respuesta del cliente nos indica que la escritura se ha realizado exitosamente, en la siguiente imagen también podemos visualizar el mensaje de notificación enviado por el servidor GATT:
 
 ```BASH
-**TODO**********
+I (42802) GATTS_TABLE_DEMO: ESP_GATTS_READ_EVT
+I (66642) GATTS_TABLE_DEMO: GATT_WRITE_EVT, handle = 43, value len = 2, value :
+I (66642) GATTS_TABLE_DEMO: 01 00
+I (66642) GATTS_TABLE_DEMO: notify enable
+I (66652) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (328642) GATTS_TABLE_DEMO: GATT_WRITE_EVT, handle = 43, value len = 2, value :
+I (328652) GATTS_TABLE_DEMO: 02 00
+I (328652) GATTS_TABLE_DEMO: indicate enable
+I (328722) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (346642) GATTS_TABLE_DEMO: GATT_WRITE_EVT, handle = 43, value len = 2, value :
+I (346652) GATTS_TABLE_DEMO: 01 00
+I (346652) GATTS_TABLE_DEMO: notify enable
+I (346652) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
 ```
