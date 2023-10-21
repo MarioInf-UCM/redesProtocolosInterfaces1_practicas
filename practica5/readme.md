@@ -253,11 +253,15 @@ handle: 0x002f, uuid: 0000ff03-0000-1000-8000-00805f9b34fb
 
 Una vez visto esto, y teniendo en cuenta que la característica de configuración asociada a **Heart Rate Value** se corresponde con el siguiente UUID al de la misma, esto quiere decir que podremos interaccionar con esta a traves de la dirección **0x002b**. 
 
-A continuación vamos a llevar a cabo tanto una lectura como una escritura en dicha característica, para lo cual utilizaremos las ordenes `char-read-hnd "codigoManejador"` y `char-write-cmd "codigoManejador"` respectivamente. En el siguiente cuadro podemos ver como el valor inicial es **0000**, sin embargo, nosotros introduciremos el valor **1234**.
+A continuación vamos a llevar a cabo tanto una lectura como una escritura en dicha característica, para lo cual utilizaremos las ordenes `char-read-hnd "codigoManejador"` y `char-write-cmd "codigoManejador"` respectivamente. En el siguiente cuadro podemos ver como el valor inicial es **0000**, sin embargo, nosotros realizaremos un par de escrituras para ver algunas de las diferentes modificaciones que podemos hacer sobre dicha configuración, siendo los valores **0100** y **0200**
 
 ```BASH
 [24:0A:C4:EA:36:B6][LE]> char-read-hnd 0x002B
 Characteristic value/descriptor: 00 00 
+[24:0A:C4:EA:36:B6][LE]> char-write-cmd 0x002B 0100
+Notification handle = 0x002a value: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 
+[24:0A:C4:EA:36:B6][LE]> char-write-cmd 0x002B 0200
+Indication   handle = 0x002a value: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 
 [24:0A:C4:EA:36:B6][LE]> char-write-cmd 0x002B 0100
 Notification handle = 0x002a value: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 
 [24:0A:C4:EA:36:B6][LE]> char-read-hnd 0x002B
@@ -281,3 +285,5 @@ I (346652) GATTS_TABLE_DEMO: 01 00
 I (346652) GATTS_TABLE_DEMO: notify enable
 I (346652) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
 ```
+
+### PASO 4: Configurar una notificación
