@@ -57,7 +57,7 @@ Recordar que para poder llevar a cabo el escaneo correctamente, nuestro equipo t
 
 ```BASH
 debian12:~$ sudo hcitool lescan | grep "RPI1"
-24:0A:C4:EA:36:B6 ESP_GATTS_PEPE
+24:0A:C4:EA:36:B6 ESP_GATTS_RPI1
 ```
 
 
@@ -190,7 +190,32 @@ Characteristic value/descriptor: 12 34 56 78
 ```
 
 
-TAREA 4
+
+<br />
+
+### PASO 3: Modificación de una característica de configuración
+
+>Tarea Básica
+>
+>Intenta ahora escribir en la característica de configuración. Para ello, utiliza el comando char-write-cmd handler valor , siendo valor, por ejemplo, 0100 .
+
+En el paso anterior hemos leído y modificado el valor asociado a la característica **Heart Rate Value**, cuyo manejador esta asociado al valor **0x002A**. A continuación vamos a modificar la configuración asociada a dicha característica. 
+
+Si miramos dentro del fichero **gatts_table_creat_demo.c** podremos ver la sección de definición de características dentro de un array del tipo **esp_gatts_attr_db_t**, en el siguiente cuadro podemos ver tanto la definición e introducción en dicho array de la característica en cuestión, como de su valor de configuración. También podemos fijarnos como ambas tienen asociados los permisos de lectura y escritura.
+
+```C
+/* Characteristic Value */
+[IDX_CHAR_VAL_A] =
+{{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_TEST_A, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+    GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value), (uint8_t *)char_value}},
+
+/* Client Characteristic Configuration Descriptor */
+[IDX_CHAR_CFG_A]  =
+{{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+    sizeof(uint16_t), sizeof(heart_measurement_ccc), (uint8_t *)heart_measurement_ccc}},
+```
+
+Para poder visualizar todas las características disponibles en el servidor, incluyendo las de configuración, podemos utilizar la orden **char-desc**. A continuación podemos ver el resultado obtenido al llevar a cabo dicha ejecución:
 
 ```BASH
 [24:0A:C4:EA:36:B6][LE]> char-desc
@@ -219,10 +244,20 @@ handle: 0x002e, uuid: 00002803-0000-1000-8000-00805f9b34fb
 handle: 0x002f, uuid: 0000ff03-0000-1000-8000-00805f9b34fb
 ```
 
+Una vez visto esto, y teniendo en cuenta que la característica de configuración asociada a **Heart Rate Value** se corresponde con el siguiente UUID al de la misma, esto quiere decir que podremos interaccionar con esta a traves de la dirección **0x002b**. 
+
+A continuación vamos a llevar a cabo tanto una lectura como una escritura en dicha característica, para lo cual utilizaremos las ordenes `char-read-hnd "codigoManejador"` y `char-write-cmd "codigoManejador"` respectivamente. En el siguiente cuadro podemos ver como el valor inicial es **0000**, sin embargo, nosotros introduciremos el valor **1234**.
+
 ```BASH
 [24:0A:C4:EA:36:B6][LE]> char-read-hnd 0x002B
 Characteristic value/descriptor: 00 00 
 [24:0A:C4:EA:36:B6][LE]> char-write-cmd 0x002B 1234
 [24:0A:C4:EA:36:B6][LE]> char-read-hnd 0x002B
 Characteristic value/descriptor: 12 34 
+```
+
+Además de ver como la respuesta del cliente nos indica que la escritura se ha realizado exitosamente, en la siguiente imagen también podemos visualizar el mensaje de notificación enviado por el servidor GATT:
+
+```BASH
+**TODO**********
 ```
