@@ -27,6 +27,7 @@
 #include "esp_bt_main.h"
 #include "gatts_table_creat_demo.h"
 #include "esp_gatt_common_api.h"
+#include "esp_random.h"
 
 #define GATTS_TABLE_TAG "GATTS_TABLE_DEMO"
 
@@ -184,6 +185,123 @@ static const uint8_t char_prop_write = ESP_GATT_CHAR_PROP_BIT_WRITE;
 static const uint8_t char_prop_read_write_notify = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY;
 static const uint8_t heart_measurement_ccc[2] = {0x00, 0x00};
 static const uint8_t char_value[4] = {0x11, 0x22, 0x33, 0x44};
+
+// Used for generating random data on index 1
+uint8_t char_value_tmp[4] = {0x11, 0x22, 0x33, 0x44};
+
+// Handle for task
+TaskHandle_t heartBeatHandle = NULL;
+
+// Function to generate a random value between 0x00 and 0xFF
+uint8_t
+generateRandomValue()
+{
+    uint32_t random_value;
+
+    // Seed the random number generator with noise from the hardware
+    esp_fill_random(&random_value, sizeof(random_value));
+
+    // Mask the result to limit it to 8 bits (0x00 - 0xFF)
+    uint8_t result = random_value & 0xFF;
+
+    return result;
+}
+
+static void publish_data_task(void *pvParameters)
+{
+    while (1)
+    {
+
+        // Leemos el valor actual desde la caracteristica
+        uint16_t length = 0;
+        const uint8_t *prf_char;
+
+        esp_gatt_status_t status = esp_ble_gatts_get_attr_value(heart_rate_handle_table[IDX_CHAR_VAL_A], &length, &prf_char);
+
+        if (status == ESP_GATT_OK)
+        {
+            ESP_LOGI("APP", "Value retrieved for IDX_CHAR_VAL_A: %02X %02X %02X %02X", prf_char[0], prf_char[1], prf_char[2], prf_char[3]);
+        }
+        else
+        {
+            ESP_LOGE("APP", "Error retrieving value for IDX_CHAR_VAL_A, error code: 0x%x", status);
+        }
+
+        memcpy(char_value_tmp, prf_char, length);
+        ESP_LOGI("APP", "Value retrieved %02X%02X%02X%02X...", char_value_tmp[3], char_value_tmp[2], char_value_tmp[1], char_value_tmp[0]);
+
+        char_value_tmp[1] = generateRandomValue();
+        ESP_LOGI("APP", "Value generated %02X%02X%02X%02X...", char_value_tmp[3], char_value_tmp[2], char_value_tmp[1], char_value_tmp[0]);
+
+        // Paso 1: Actualizo valor...
+        status = esp_ble_gatts_set_attr_value(heart_rate_handle_table[IDX_CHAR_VAL_A], sizeof(char_value_tmp), char_value_tmp);
+
+        if (status == ESP_GATT_OK)
+        {
+            ESP_LOGI("APP", "Update value for IDX_CHAR_VAL_A: %02X %02X %02X %02X", char_value_tmp[0], char_value_tmp[1], char_value_tmp[2], char_value_tmp[3]);
+        }
+        else
+        {
+            ESP_LOGE("APP", "Error updating value for IDX_CHAR_VAL_A, error code: 0x%x", status);
+        }
+
+        // Paso 2: Si las notificaciones están activas envío datos...
+
+        length = 0;
+        const uint8_t *config_value;
+
+        status = esp_ble_gatts_get_attr_value(heart_rate_handle_table[IDX_CHAR_CFG_A], &length, &config_value);
+
+        if (status == ESP_GATT_OK)
+        {
+            ESP_LOGI("APP", "Retrieved value for IDX_CHAR_CFG_A: %02X %02X", config_value[0], config_value[1]);
+        }
+        else
+        {
+            ESP_LOGE("APP", "Error retrieving value for IDX_CHAR_CFG_A, error code: 0x%x", status);
+        }
+
+        if (config_value[0] == 0x01 && config_value[1] == 0x00)
+        {
+
+            ESP_LOGI("APP", "Notifications enabled, sending data...");
+            uint16_t length = 0;
+            const uint8_t *char_value;
+
+            esp_gatt_status_t status = esp_ble_gatts_get_attr_value(heart_rate_handle_table[IDX_CHAR_VAL_A], &length, &char_value);
+
+            if (status == ESP_GATT_OK)
+            {
+                ESP_LOGI("APP", "Retrieving value for IDX_CHAR_VAL_A: %02X %02X %02X %02X", char_value[0], char_value[1], char_value[2], char_value[3]);
+            }
+            else
+            {
+                ESP_LOGE("APP", "Error retrieving value for IDX_CHAR_VAL_A, error code: 0x%x", status);
+            }
+
+            status = esp_ble_gatts_send_indicate(heart_rate_profile_tab[0].gatts_if,
+                                                 heart_rate_profile_tab[0].conn_id,
+                                                 heart_rate_handle_table[IDX_CHAR_VAL_A],
+                                                 sizeof(char_value), char_value, false);
+            if (status == ESP_GATT_OK)
+            {
+                ESP_LOGI("APP", "Data sent successfully: %02X %02X %02X %02X", char_value[0], char_value[1], char_value[2], char_value[3]);
+            }
+            else
+            {
+                ESP_LOGE("APP", "Error sending data, error code: 0x%x", status);
+                vTaskDelete(NULL);
+            }
+        }
+        else
+        {
+            ESP_LOGI("APP", "Notifications disabled, not sending data...");
+        }
+
+        // Paso 3: Duermo un segundo...
+        vTaskDelay(1000. / portTICK_PERIOD_MS);
+    }
+}
 
 /* Full Database Description - Used to add attributes into the database */
 static const esp_gatts_attr_db_t gatt_db[HRS_IDX_NB] =
@@ -460,6 +578,15 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
                     ESP_LOGE(GATTS_TABLE_TAG, "unknown descr value");
                     esp_log_buffer_hex(GATTS_TABLE_TAG, param->write.value, param->write.len);
                 }
+                esp_gatt_status_t status = esp_ble_gatts_set_attr_value(heart_rate_handle_table[IDX_CHAR_CFG_A], param->write.len, param->write.value);
+                if (status == ESP_GATT_OK)
+                {
+                    ESP_LOGI("APP", "IDX_CHAR_CFG_A written value: %02X %02X", param->write.value[0], param->write.value[1]);
+                }
+                else
+                {
+                    ESP_LOGE("APP", "Error writen value for IDX_CHAR_CFG_A, error code: 0x%x", status);
+                }
             }
             /* send response when param->write.need_rsp is true*/
             if (param->write.need_rsp)
@@ -499,9 +626,25 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
         conn_params.timeout = 400;  // timeout = 400*10ms = 4000ms
         // start sent the update connection parameters to the peer device.
         esp_ble_gap_update_conn_params(&conn_params);
+        ESP_LOGI(GATTS_TABLE_TAG, "Creating publish_data_task...");
+        xTaskCreate(&publish_data_task, "publish_data_task", 4096, NULL, 5, &heartBeatHandle);
         break;
     case ESP_GATTS_DISCONNECT_EVT:
         ESP_LOGI(GATTS_TABLE_TAG, "ESP_GATTS_DISCONNECT_EVT, reason = 0x%x", param->disconnect.reason);
+        // Delete heartBeatHandle.
+        if (heartBeatHandle != NULL)
+        {
+            vTaskDelete(heartBeatHandle);
+        }
+        esp_gatt_status_t status = esp_ble_gatts_set_attr_value(heart_rate_handle_table[IDX_CHAR_CFG_A], sizeof(heart_measurement_ccc), heart_measurement_ccc);
+        if (status == ESP_GATT_OK)
+        {
+            ESP_LOGI("APP", "IDX_CHAR_CFG_A set to 0x0000");
+        }
+        else
+        {
+            ESP_LOGE("APP", "Error setting IDX_CHAR_CFG_A to 0x0000, error code: 0x%x", status);
+        }
         esp_ble_gap_start_advertising(&adv_params);
         break;
     case ESP_GATTS_CREAT_ATTR_TAB_EVT:

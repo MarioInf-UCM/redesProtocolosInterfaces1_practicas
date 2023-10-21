@@ -288,6 +288,56 @@ I (346652) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
 
 ### PASO 4: Configurar una notificación
 
+Para poder activar las notificaciones una vez conectado al dispositivo BLE se han modificado distintos apartados:
+
+#### PASO 1: Guardar el valor de IDX_CHAR_CFG_A
+
+Una vez conectado, el usuario puede activar las notificaciones escribiendo sobre la caracteristica de configuración con el comando
+
+```BASH
+char-write-cmd 0x002b 0100
+```
+
+Para guardar el valor dentro de la caracteristica se ha añadido el siguiente código dentro de la función `gatts_profile_event_handler` para tratar el evento `ESP_GATTS_WRITE_EVT`:
+
+```c
+esp_gatt_status_t status = esp_ble_gatts_set_attr_value(heart_rate_handle_table[IDX_CHAR_CFG_A], param->write.len, param->write.value);
+if (status == ESP_GATT_OK)
+{
+    ESP_LOGI("APP", "IDX_CHAR_CFG_A written value: %02X %02X", param->write.value[0], param->write.value[1]);
+}
+else
+{
+    ESP_LOGE("APP", "Error writen value for IDX_CHAR_CFG_A, error code: 0x%x", status);
+}
+```
+
+
+#### PASO 2: Registrar la función `publish_data_task` dentro del tratamiento del evento `ESP_GATTS_CONNECT_EVT` ante la conexión de un nuevo usuario
+
+```c
+ESP_LOGI(GATTS_TABLE_TAG, "Creating publish_data_task...");
+xTaskCreate(&publish_data_task, "publish_data_task", 4096, NULL, 5, &heartBeatHandle);
+```
+
+#### PASO 3: Crear la función `publish_data_task`
+
+Haciendo uso de las funciones `esp_ble_gatts_get_attr_value` y `esp_ble_gatts_set_attr_value` se realizan las siguientes acciones:
+- Obtener el valor en curso de IDX_CHAR_VAL_A
+- Actualizar el byte 1 con un valor aleatorio
+- Guardar el varlo IDX_CHAR_VAL_A
+- Obtener el valor de configuración IDX_CHAR_CFG_A
+- Si tiene las notificaciones activadas, obtener el valor actualziado de IDX_CHAR_VAL_A y enviarlo al usuario
+
+
+#### PASO 4: Tratamiento del evento de desconexión ESP_GATTS_DISCONNECT_EVT
+
+En caso de deconexión del cliente realizamos las siguientes acciones:
+- Borramos la tarea periodica `publish_data_task`
+- Volvemos a dejar el valor de `IDX_CHAR_CFG_A` a 0x0000
+
+#### PASO 5: Ejemplo de salida en el cliente linux usando gatttool
+
 
 A continuación tenemos un cuadro donde se encuentra la conexión con el dispositivo y la ejecución de la orden de escritura en la característica de configuración del ritmo cardíaco. Podemos ver como la recepción de mensajes se lleva a cabo de manera periódica.
 
@@ -302,3 +352,181 @@ Notification handle = 0x002a value: 22 41 22 22
 Notification handle = 0x002a value: 22 99 22 22 
 Notification handle = 0x002a value: 22 8c 22 22 
 ```
+
+
+#### PASO 6: Ejemplo de salide del dispositivo conectando con el movil y la aplicación BLE Scanner
+<img src="images/captura_movil.jpeg" alt="drawing" style="width:20%; 
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    margin-botton: 1%;
+"/>
+
+
+```BASH
+I (573) main_task: Calling app_main()
+I (593) BTDM_INIT: BT controller compile version [946b762]
+I (593) BTDM_INIT: Bluetooth MAC: 94:3c:c6:cd:bb:4e
+I (603) phy_init: phy_version 4670,719f9f6,Feb 18 2021,17:07:07
+I (1033) main_task: Returned from app_main()
+I (1043) GATTS_TABLE_DEMO: create attribute table successfully, the number handle = 8
+I (1043) GATTS_TABLE_DEMO: SERVICE_START_EVT, status 0, service_handle 40
+I (1053) GATTS_TABLE_DEMO: advertising start successfully
+I (4753) GATTS_TABLE_DEMO: ESP_GATTS_CONNECT_EVT, conn_id = 0
+I (4753) GATTS_TABLE_DEMO: 5f b2 d5 67 42 17
+I (4753) GATTS_TABLE_DEMO: Creating publish_data_task...
+I (4753) APP: Value retrieved for IDX_CHAR_VAL_A: 11 22 33 44
+I (4763) APP: Value retrieved 44332211...
+I (4763) APP: Value generated 44333411...
+I (4773) APP: Update value for IDX_CHAR_VAL_A: 11 34 33 44
+I (4783) APP: Retrieved value for IDX_CHAR_CFG_A: 00 00
+I (4783) APP: Notifications disabled, not sending data...
+I (5143) GATTS_TABLE_DEMO: update connection params status = 0, min_int = 16, max_int = 32,conn_int = 6,latency = 0, timeout = 500
+I (5423) GATTS_TABLE_DEMO: update connection params status = 0, min_int = 0, max_int = 0,conn_int = 24,latency = 0, timeout = 400
+I (5793) APP: Value retrieved for IDX_CHAR_VAL_A: 11 34 33 44
+I (5793) APP: Value retrieved 44333411...
+I (5793) APP: Value generated 4433F011...
+I (5793) APP: Update value for IDX_CHAR_VAL_A: 11 F0 33 44
+I (5803) APP: Retrieved value for IDX_CHAR_CFG_A: 00 00
+I (5803) APP: Notifications disabled, not sending data...
+I (6813) APP: Value retrieved for IDX_CHAR_VAL_A: 11 F0 33 44
+I (6813) APP: Value retrieved 4433F011...
+I (6813) APP: Value generated 4433EE11...
+I (6813) APP: Update value for IDX_CHAR_VAL_A: 11 EE 33 44
+I (6823) APP: Retrieved value for IDX_CHAR_CFG_A: 00 00
+I (6823) APP: Notifications disabled, not sending data...
+I (7833) APP: Value retrieved for IDX_CHAR_VAL_A: 11 EE 33 44
+I (7833) APP: Value retrieved 4433EE11...
+I (7833) APP: Value generated 4433B011...
+I (7833) APP: Update value for IDX_CHAR_VAL_A: 11 B0 33 44
+I (7843) APP: Retrieved value for IDX_CHAR_CFG_A: 00 00
+I (7843) APP: Notifications disabled, not sending data...
+I (8853) APP: Value retrieved for IDX_CHAR_VAL_A: 11 B0 33 44
+I (8853) APP: Value retrieved 4433B011...
+I (8853) APP: Value generated 4433F311...
+I (8853) APP: Update value for IDX_CHAR_VAL_A: 11 F3 33 44
+I (8863) APP: Retrieved value for IDX_CHAR_CFG_A: 00 00
+I (8863) APP: Notifications disabled, not sending data...
+I (9873) APP: Value retrieved for IDX_CHAR_VAL_A: 11 F3 33 44
+I (9873) APP: Value retrieved 4433F311...
+I (9873) APP: Value generated 44334211...
+I (9873) APP: Update value for IDX_CHAR_VAL_A: 11 42 33 44
+I (9883) APP: Retrieved value for IDX_CHAR_CFG_A: 00 00
+I (9883) APP: Notifications disabled, not sending data...
+I (10893) APP: Value retrieved for IDX_CHAR_VAL_A: 11 42 33 44
+I (10893) APP: Value retrieved 44334211...
+I (10893) APP: Value generated 4433A211...
+I (10893) APP: Update value for IDX_CHAR_VAL_A: 11 A2 33 44
+I (10903) APP: Retrieved value for IDX_CHAR_CFG_A: 00 00
+I (10903) APP: Notifications disabled, not sending data...
+I (11853) GATTS_TABLE_DEMO: GATT_WRITE_EVT, handle = 43, value len = 2, value :
+I (11853) GATTS_TABLE_DEMO: 01 00
+I (11853) GATTS_TABLE_DEMO: notify enable
+I (11863) APP: IDX_CHAR_CFG_A written value: 01 00
+I (11873) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (11913) APP: Value retrieved for IDX_CHAR_VAL_A: 11 A2 33 44
+I (11913) APP: Value retrieved 4433A211...
+I (11913) APP: Value generated 4433DC11...
+I (11913) APP: Update value for IDX_CHAR_VAL_A: 11 DC 33 44
+I (11923) APP: Retrieved value for IDX_CHAR_CFG_A: 01 00
+I (11923) APP: Notifications enabled, sending data...
+I (11933) APP: Retrieving value for IDX_CHAR_VAL_A: 11 DC 33 44
+I (11943) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (11943) APP: Data sent successfully: 11 DC 33 44
+I (12953) APP: Value retrieved for IDX_CHAR_VAL_A: 11 DC 33 44
+I (12953) APP: Value retrieved 4433DC11...
+I (12953) APP: Value generated 4433E711...
+I (12953) APP: Update value for IDX_CHAR_VAL_A: 11 E7 33 44
+I (12963) APP: Retrieved value for IDX_CHAR_CFG_A: 01 00
+I (12963) APP: Notifications enabled, sending data...
+I (12973) APP: Retrieving value for IDX_CHAR_VAL_A: 11 E7 33 44
+I (12983) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (12983) APP: Data sent successfully: 11 E7 33 44
+I (13993) APP: Value retrieved for IDX_CHAR_VAL_A: 11 E7 33 44
+I (13993) APP: Value retrieved 4433E711...
+I (13993) APP: Value generated 44336311...
+I (13993) APP: Update value for IDX_CHAR_VAL_A: 11 63 33 44
+I (14003) APP: Retrieved value for IDX_CHAR_CFG_A: 01 00
+I (14003) APP: Notifications enabled, sending data...
+I (14013) APP: Retrieving value for IDX_CHAR_VAL_A: 11 63 33 44
+I (14023) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (14023) APP: Data sent successfully: 11 63 33 44
+I (15033) APP: Value retrieved for IDX_CHAR_VAL_A: 11 63 33 44
+I (15033) APP: Value retrieved 44336311...
+I (15033) APP: Value generated 44334811...
+I (15033) APP: Update value for IDX_CHAR_VAL_A: 11 48 33 44
+I (15043) APP: Retrieved value for IDX_CHAR_CFG_A: 01 00
+I (15043) APP: Notifications enabled, sending data...
+I (15053) APP: Retrieving value for IDX_CHAR_VAL_A: 11 48 33 44
+I (15063) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (15063) APP: Data sent successfully: 11 48 33 44
+I (16073) APP: Value retrieved for IDX_CHAR_VAL_A: 11 48 33 44
+I (16073) APP: Value retrieved 44334811...
+I (16073) APP: Value generated 44339411...
+I (16073) APP: Update value for IDX_CHAR_VAL_A: 11 94 33 44
+I (16083) APP: Retrieved value for IDX_CHAR_CFG_A: 01 00
+I (16083) APP: Notifications enabled, sending data...
+I (16093) APP: Retrieving value for IDX_CHAR_VAL_A: 11 94 33 44
+I (16103) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (16103) APP: Data sent successfully: 11 94 33 44
+I (17113) APP: Value retrieved for IDX_CHAR_VAL_A: 11 94 33 44
+I (17113) APP: Value retrieved 44339411...
+I (17113) APP: Value generated 4433E211...
+I (17113) APP: Update value for IDX_CHAR_VAL_A: 11 E2 33 44
+I (17123) APP: Retrieved value for IDX_CHAR_CFG_A: 01 00
+I (17123) APP: Notifications enabled, sending data...
+I (17133) APP: Retrieving value for IDX_CHAR_VAL_A: 11 E2 33 44
+I (17143) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (17143) APP: Data sent successfully: 11 E2 33 44
+I (18153) APP: Value retrieved for IDX_CHAR_VAL_A: 11 E2 33 44
+I (18153) APP: Value retrieved 4433E211...
+I (18153) APP: Value generated 4433F911...
+I (18153) APP: Update value for IDX_CHAR_VAL_A: 11 F9 33 44
+I (18163) APP: Retrieved value for IDX_CHAR_CFG_A: 01 00
+I (18163) APP: Notifications enabled, sending data...
+I (18173) APP: Retrieving value for IDX_CHAR_VAL_A: 11 F9 33 44
+I (18183) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (18183) APP: Data sent successfully: 11 F9 33 44
+I (19193) APP: Value retrieved for IDX_CHAR_VAL_A: 11 F9 33 44
+I (19193) APP: Value retrieved 4433F911...
+I (19193) APP: Value generated 44339111...
+I (19193) APP: Update value for IDX_CHAR_VAL_A: 11 91 33 44
+I (19203) APP: Retrieved value for IDX_CHAR_CFG_A: 01 00
+I (19203) APP: Notifications enabled, sending data...
+I (19213) APP: Retrieving value for IDX_CHAR_VAL_A: 11 91 33 44
+I (19223) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (19223) APP: Data sent successfully: 11 91 33 44
+I (20233) APP: Value retrieved for IDX_CHAR_VAL_A: 11 91 33 44
+I (20233) APP: Value retrieved 44339111...
+I (20233) APP: Value generated 4433DF11...
+I (20233) APP: Update value for IDX_CHAR_VAL_A: 11 DF 33 44
+I (20243) APP: Retrieved value for IDX_CHAR_CFG_A: 01 00
+I (20243) APP: Notifications enabled, sending data...
+I (20253) APP: Retrieving value for IDX_CHAR_VAL_A: 11 DF 33 44
+I (20263) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (20263) APP: Data sent successfully: 11 DF 33 44
+I (21273) APP: Value retrieved for IDX_CHAR_VAL_A: 11 DF 33 44
+I (21273) APP: Value retrieved 4433DF11...
+I (21273) APP: Value generated 44335311...
+I (21273) APP: Update value for IDX_CHAR_VAL_A: 11 53 33 44
+I (21283) APP: Retrieved value for IDX_CHAR_CFG_A: 01 00
+I (21283) APP: Notifications enabled, sending data...
+I (21293) APP: Retrieving value for IDX_CHAR_VAL_A: 11 53 33 44
+I (21303) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (21303) APP: Data sent successfully: 11 53 33 44
+I (22313) APP: Value retrieved for IDX_CHAR_VAL_A: 11 53 33 44
+I (22313) APP: Value retrieved 44335311...
+I (22313) APP: Value generated 44333911...
+I (22313) APP: Update value for IDX_CHAR_VAL_A: 11 39 33 44
+I (22323) GATTS_TABLE_DEMO: update connection params status = 0, min_int = 0, max_int = 0,conn_int = 6,latency = 0, timeout = 500
+I (22323) APP: Retrieved value for IDX_CHAR_CFG_A: 01 00
+I (22343) APP: Notifications enabled, sending data...
+I (22343) APP: Retrieving value for IDX_CHAR_VAL_A: 11 39 33 44
+I (22353) APP: Data sent successfully: 11 39 33 44
+I (22353) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
+I (22433) GATTS_TABLE_DEMO: update connection params status = 0, min_int = 0, max_int = 0,conn_int = 24,latency = 0, timeout = 400
+W (23163) BT_HCI: hcif disc complete: hdl 0x0, rsn 0x13
+I (23163) GATTS_TABLE_DEMO: ESP_GATTS_DISCONNECT_EVT, reason = 0x13
+I (23163) APP: IDX_CHAR_CFG_A set to 0x0000
+I (23183) GATTS_TABLE_DEMO: advertising start successfully```
