@@ -268,7 +268,7 @@ Notification handle = 0x002a value: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e
 Characteristic value/descriptor: 01 00 
 ```
 
-Además de ver como la respuesta del cliente nos indica que la escritura se ha realizado exitosamente, en la siguiente imagen también podemos visualizar el mensaje de notificación enviado por el servidor GATT:
+Además de ver como la respuesta del cliente nos indica que la escritura se ha realizado exitosamente, en el siguiente cuadro también podemos visualizar el mensaje de notificación enviado por el servidor GATT:
 
 ```BASH
 I (42802) GATTS_TABLE_DEMO: ESP_GATTS_READ_EVT
@@ -287,3 +287,18 @@ I (346652) GATTS_TABLE_DEMO: ESP_GATTS_CONF_EVT, status = 0, attr_handle 42
 ```
 
 ### PASO 4: Configurar una notificación
+
+
+A continuación tenemos un cuadro donde se encuentra la conexión con el dispositivo y la ejecución de la orden de escritura en la característica de configuración del ritmo cardíaco. Podemos ver como la recepción de mensajes se lleva a cabo de manera periódica.
+
+```BASH
+gatttool -b 94:3C:C6:CD:BB:4E -I
+[94:3C:C6:CD:BB:4E][LE]> connect 
+Attempting to connect to 94:3C:C6:CD:BB:4E
+Connection successful
+[94:3C:C6:CD:BB:4E][LE]> char-write-cmd 0x002b 0100
+Notification handle = 0x002a value: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 
+Notification handle = 0x002a value: 22 41 22 22 
+Notification handle = 0x002a value: 22 99 22 22 
+Notification handle = 0x002a value: 22 8c 22 22 
+```
