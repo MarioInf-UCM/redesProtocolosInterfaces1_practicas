@@ -21,7 +21,7 @@ Antes de llevar a cabo el escaneo, necesitaremos ejecutar el ejemplo mencionado 
 
 
 ```C
-#define SAMPLE_DEVICE_NAME          "ESP32_RPI1"    //"ESP_GATTS_DEMO"
+#define SAMPLE_DEVICE_NAME          "ESP_GATTS_RPI1"    //"ESP_GATTS_DEMO"
 .
 .
 .
@@ -33,7 +33,8 @@ static uint8_t raw_adv_data[] = {
         /* service uuid */
         0x03, 0x03, 0xFF, 0x00,
         /* device name */
-        0x0f, 0x09, 'E', 'S', 'P', '3', '2', '_', 'R', 'P', 'I', '1'
+       //0x0f, 0x09, 'E', 'S', 'P', '_', 'G', 'A', 'T', 'T', 'S', '_', 'D','E', 'M', 'O'
+        0x0f, 0x09, 'E', 'S', 'P', '_', 'G', 'A', 'T', 'T,', 'S', '_', 'R', 'P', 'I', '1'
 };
 
 ```
@@ -257,9 +258,10 @@ A continuación vamos a llevar a cabo tanto una lectura como una escritura en di
 ```BASH
 [24:0A:C4:EA:36:B6][LE]> char-read-hnd 0x002B
 Characteristic value/descriptor: 00 00 
-[24:0A:C4:EA:36:B6][LE]> char-write-cmd 0x002B 1234
+[24:0A:C4:EA:36:B6][LE]> char-write-cmd 0x002B 0100
+Notification handle = 0x002a value: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 
 [24:0A:C4:EA:36:B6][LE]> char-read-hnd 0x002B
-Characteristic value/descriptor: 12 34 
+Characteristic value/descriptor: 01 00 
 ```
 
 Además de ver como la respuesta del cliente nos indica que la escritura se ha realizado exitosamente, en la siguiente imagen también podemos visualizar el mensaje de notificación enviado por el servidor GATT:
