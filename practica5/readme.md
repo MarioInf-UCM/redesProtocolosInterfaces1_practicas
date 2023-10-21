@@ -11,6 +11,10 @@ En la presente práctica vamos a llevar a cabo la implementación de un servidor
 
 ## Escaneado de dispositivos Bluetooth disponibles
 
+>Tarea Básica
+>
+>Edita el fichero main/gatts_table_creat_demo.c y modifica el nombre de tu dispositivo, que se enviará en cada anuncio emitido en la fase de advertising . Para ello, debes modificar el campo correspondiente de la estructura raw_adv_data . A continuación, compila y flashea el ejemplo, y comienza una sesión de escaneado de dispositivos BLE mediante la orden: sudo hcitool lescan Deberás observar tu dispositivo en una de las líneas. Anota o recuerda su dirección MAC.
+
 A continuación vamos a llevar a cabo el escaneado de los posibles servidores GATT disponibles mediante la interfaz Bluetooth de nuestro equipo Linux, para lo cual necesitaremos utilizar la herramienta de línea de comandos **hcitool**, la cual nos permitirá gestionar dicha interfaz y realizar un análisis de los dispositivos existentes. En el caso de que no se disponga de dicha herramienta, necesitaremos instalarla en nuestro equipo. En el siguiente [enlace](https://command-not-found.com/hcitool) tendremos un breve resumen de las instrucciones para llevar a cabo la instalación en las principales distribuciones Linux.S
 
 Antes de llevar a cabo el escaneo, necesitaremos ejecutar el ejemplo mencionado **gatt_server_service_table** en nuestro SoC, para lo cual tenemos que modificar el nombre con el que dicho servidor se publicitará, de modo que podamos identificarlo sin problemas. En los siguientes cuadros podemos ver las modificaciones necesarias para cambiar el nombre del servidor GATT, las cuales se encuentran en la parte inicial del fichero **gatts_table_creat_demo.c**.
@@ -71,9 +75,13 @@ Para un mejor entendimiento de las acciones realizadas, dividiremos el presente 
 
 <br />
 
-### PASO 1: Establecimiento de conexión
+### PASO 1: Establecimiento de conexión y consulta de características
 
-Una vez instalada la herramienta, realizaremos la conexión con nuestro servidor GATT mediante la orden `gatttool -b "direccionMAC" -I`, cuya salida podremos en el siguiente cuadro, donde se ha llevado a cabo la conexión de forma exitosa:
+>Tarea Básica
+>
+>Mediante el comando correspondiente ( characteristics ), consulta y anota las características disponibles en tu servidor GATT.
+
+Una vez instalada la herramienta, realizaremos la conexión con nuestro servidor GATT mediante la orden `gatttool -b "direccionMAC" -I`, el cual iniciará el intérprete de instrucciones en línea de comandos y cuya salida podremos en el siguiente cuadro, donde se ha llevado a cabo la conexión:
 
 ```BASH
 mario@debian12:~$ gatttool -b 24:0A:C4:EA:36:B6 -I
@@ -87,20 +95,7 @@ De la misma manera, cuando llevamos acabo la conexión también obtenemos una no
 
 TODO****
 
-Una vez realizado esto, podemos determinar que la conexión ha sido establecida de exitosamente.
-
-
-
-TAREA 2
-
-
-```C
-/* Service */
-static const uint16_t GATTS_SERVICE_UUID_TEST      = 0x00FF;
-static const uint16_t GATTS_CHAR_UUID_TEST_A       = 0xFF01;
-static const uint16_t GATTS_CHAR_UUID_TEST_B       = 0xFF02;
-static const uint16_t GATTS_CHAR_UUID_TEST_C       = 0xFF03;
-```
+Una vez realizado esto, podemos determinar que la conexión ha sido establecida de exitosamente, por lo que ahora podremos examinar todas y cada una de las características disponibles en nuestro servidor GATT mediante la orden `characteristics`, enviada desde el interprete de comandos en nuestro sistema. En el siguiente cuadro podemos ver una salida de la ejecución de dicha orden:
 
 ```BASH
 [24:0A:C4:EA:36:B6][LE]> characteristics 
@@ -116,16 +111,36 @@ handle: 0x002e, char properties: 0x08, char value handle: 0x002f, uuid: 0000ff03
 [24:0A:C4:EA:36:B6][LE]> 
 ```
 
+>Tarea Adicional
+>
+>El manejador que permite leer desde la característica *Heart Rate Value" tiene un manejador de tipo char asociado. Anota su valor.
 
+Para poder determinar cual es el valor del UUID que corresponde a la característica **Heart Rate Value** necesitaremos examinar las variables variables definidas dentro del fichero **gatts_table_creat_demo.c**, teniendo en cuenta que se corresponde con la definida como **GATTS_CHAR_UUID_TEST_A**. En el siguiente cuadro podemos ver la definición de la variable en cuestión y de aquellas adyacentes.
 
-
-```BASH
-handle: 0x0029, char properties: 0x1a, char value handle: 0x002a, uuid: 0000ff01-0000-1000-8000-00805f9b34fb
+```C
+/* Service */
+static const uint16_t GATTS_SERVICE_UUID_TEST      = 0x00FF;
+static const uint16_t GATTS_CHAR_UUID_TEST_A       = 0xFF01;
+static const uint16_t GATTS_CHAR_UUID_TEST_B       = 0xFF02;
 ```
-Su manejador es 0x002A
+
+Teniendo esto en cuenta y en base a la tabla de características devueltas anteriormente por el servidor GATT, podemos ver como el UUID asociado a dicha variable es **0000ff01-0000-1000-8000-00805f9b34fb** y su handler, el cual utilizaremos más adelante y es necesario para interaccionar con la misma, es **0x002a**
 
 
-TAREA 3
+
+<br />
+
+### PASO 2:
+
+
+
+
+
+
+
+
+
+
 
 ```BASH
 [24:0A:C4:EA:36:B6][LE]> char-read-hnd 0x002A
