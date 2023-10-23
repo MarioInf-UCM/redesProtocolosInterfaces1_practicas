@@ -4,4 +4,21 @@ menu "Example Configuration"
         bool "Dump whole adv data and scan response data in example"
         default n
 
+    config SCANNING_TIME_LENGTH
+        int "Duration of a scan (s)"
+        range 100 300
+        default 10
+
+    config PERIOD_BEWTEEN_TWO_SCAN
+        int "Period between two scan (s)"
+        range 100 30000
+        default 3000
+
+    config PERIOD_BEWTEEN_TWO_SCAN_EVENTS
+        int "Period between two scan (1,25ms * X)"
+        range 100 3000
+        default 500
+
+
+
 endmenu
