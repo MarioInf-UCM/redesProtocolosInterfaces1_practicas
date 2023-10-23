@@ -1,0 +1,1 @@
+# PRÁCTICA 6 - Implementación de un cliente GATT
