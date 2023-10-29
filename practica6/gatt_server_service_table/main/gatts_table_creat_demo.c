@@ -34,7 +34,7 @@
 #define PROFILE_NUM 1
 #define PROFILE_APP_IDX 0
 #define ESP_APP_ID 0x55
-#define SAMPLE_DEVICE_NAME "ESP_GATTS_SERVER"
+#define SAMPLE_DEVICE_NAME "ESP_GATTS_SERV"
 #define SVC_INST_ID 0
 
 /* The max length of characteristic value. When the GATT client performs a write or prepare write operation,
@@ -69,7 +69,7 @@ static uint8_t raw_adv_data[] = {
     /* service uuid */
     0x03, 0x03, 0xFF, 0x00,
     /* device name */
-    0x0f, 0x09, 'E', 'S', 'P', '_', 'G', 'A', 'T', 'T', 'S', '_', 'S', 'E', 'R', 'V', 'E', 'R'};
+    0x0f, 0x09, 'E', 'S', 'P', '_', 'G', 'A', 'T', 'T', 'S', '_', 'S', 'E', 'R', 'V'};
 static uint8_t raw_scan_rsp_data[] = {
     /* flags */
     0x02, 0x01, 0x06,
@@ -193,8 +193,7 @@ uint8_t char_value_tmp[4] = {0x11, 0x22, 0x33, 0x44};
 TaskHandle_t heartBeatHandle = NULL;
 
 // Function to generate a random value between 0x00 and 0xFF
-uint8_t
-generateRandomValue()
+uint8_t generateRandomValue()
 {
     uint32_t random_value;
 
@@ -218,20 +217,20 @@ static void publish_data_task(void *pvParameters)
 
         esp_gatt_status_t status = esp_ble_gatts_get_attr_value(heart_rate_handle_table[IDX_CHAR_VAL_A], &length, &prf_char);
 
-        if (status == ESP_GATT_OK)
-        {
-            ESP_LOGI("APP", "Value retrieved for IDX_CHAR_VAL_A: %02X %02X %02X %02X", prf_char[0], prf_char[1], prf_char[2], prf_char[3]);
-        }
-        else
-        {
-            ESP_LOGE("APP", "Error retrieving value for IDX_CHAR_VAL_A, error code: 0x%x", status);
-        }
+        // if (status == ESP_GATT_OK)
+        // {
+        //     ESP_LOGI("APP", "Value retrieved for IDX_CHAR_VAL_A: %02X %02X %02X %02X", prf_char[0], prf_char[1], prf_char[2], prf_char[3]);
+        // }
+        // else
+        // {
+        //     ESP_LOGE("APP", "Error retrieving value for IDX_CHAR_VAL_A, error code: 0x%x", status);
+        // }
 
         memcpy(char_value_tmp, prf_char, length);
-        ESP_LOGI("APP", "Value retrieved %02X%02X%02X%02X...", char_value_tmp[3], char_value_tmp[2], char_value_tmp[1], char_value_tmp[0]);
+        // ESP_LOGI("APP", "Value retrieved %02X%02X%02X%02X...", char_value_tmp[3], char_value_tmp[2], char_value_tmp[1], char_value_tmp[0]);
 
         char_value_tmp[1] = generateRandomValue();
-        ESP_LOGI("APP", "Value generated %02X%02X%02X%02X...", char_value_tmp[3], char_value_tmp[2], char_value_tmp[1], char_value_tmp[0]);
+        // ESP_LOGI("APP", "Value generated %02X%02X%02X%02X...", char_value_tmp[3], char_value_tmp[2], char_value_tmp[1], char_value_tmp[0]);
 
         // Paso 1: Actualizo valor...
         status = esp_ble_gatts_set_attr_value(heart_rate_handle_table[IDX_CHAR_VAL_A], sizeof(char_value_tmp), char_value_tmp);
@@ -252,14 +251,14 @@ static void publish_data_task(void *pvParameters)
 
         status = esp_ble_gatts_get_attr_value(heart_rate_handle_table[IDX_CHAR_CFG_A], &length, &config_value);
 
-        if (status == ESP_GATT_OK)
-        {
-            ESP_LOGI("APP", "Retrieved value for IDX_CHAR_CFG_A: %02X %02X", config_value[0], config_value[1]);
-        }
-        else
-        {
-            ESP_LOGE("APP", "Error retrieving value for IDX_CHAR_CFG_A, error code: 0x%x", status);
-        }
+        // if (status == ESP_GATT_OK)
+        // {
+        //     ESP_LOGI("APP", "Retrieved value for IDX_CHAR_CFG_A: %02X %02X", config_value[0], config_value[1]);
+        // }
+        // else
+        // {
+        //     ESP_LOGE("APP", "Error retrieving value for IDX_CHAR_CFG_A, error code: 0x%x", status);
+        // }
 
         if (config_value[0] == 0x01 && config_value[1] == 0x00)
         {
@@ -270,14 +269,14 @@ static void publish_data_task(void *pvParameters)
 
             esp_gatt_status_t status = esp_ble_gatts_get_attr_value(heart_rate_handle_table[IDX_CHAR_VAL_A], &length, &char_value);
 
-            if (status == ESP_GATT_OK)
-            {
-                ESP_LOGI("APP", "Retrieving value for IDX_CHAR_VAL_A: %02X %02X %02X %02X", char_value[0], char_value[1], char_value[2], char_value[3]);
-            }
-            else
-            {
-                ESP_LOGE("APP", "Error retrieving value for IDX_CHAR_VAL_A, error code: 0x%x", status);
-            }
+            // if (status == ESP_GATT_OK)
+            // {
+            //     ESP_LOGI("APP", "Retrieving value for IDX_CHAR_VAL_A: %02X %02X %02X %02X", char_value[0], char_value[1], char_value[2], char_value[3]);
+            // }
+            // else
+            // {
+            //     ESP_LOGE("APP", "Error retrieving value for IDX_CHAR_VAL_A, error code: 0x%x", status);
+            // }
 
             status = esp_ble_gatts_send_indicate(heart_rate_profile_tab[0].gatts_if,
                                                  heart_rate_profile_tab[0].conn_id,
@@ -290,7 +289,7 @@ static void publish_data_task(void *pvParameters)
             else
             {
                 ESP_LOGE("APP", "Error sending data, error code: 0x%x", status);
-                vTaskDelete(NULL);
+                // vTaskDelete(NULL);
             }
         }
         else

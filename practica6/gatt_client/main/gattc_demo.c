@@ -30,6 +30,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
+#include "esp_timer.h"
 
 #define GATTC_TAG "GATTC_CLIENT"
 #define REMOTE_SERVICE_UUID 0x00FF
@@ -44,21 +45,23 @@
 #define BLE_SCAN_LE_WINDOW CONFIG_BLE_SCAN_LE_WINDOW
 #define MAC_KNOWN_DEVICE CONFIG_MAC_KNOWN_DEVICE
 #define BLINK_GPIO CONFIG_BLINK_GPIO
+#define ESP_GATT_UUID_CHAR_CLIENT_CONFIG 0x2902
 
-static const char remote_device_name[] = "ESP_GATTS_CLIENT_NOCONNECT";
+static const char remote_device_name[] = "ESP_GATTS_SERV";
 static bool connect = false;
 static bool get_server = false;
 static esp_gattc_char_elem_t *char_elem_result = NULL;
 static esp_gattc_descr_elem_t *descr_elem_result = NULL;
 static uint8_t s_led_state = 0;
 static int delay_blinking = 0;
+esp_timer_handle_t led_timer;
 
 /* Declare static functions */
 static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
 static void esp_gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 void esp_bd_addr_to_string(esp_bd_addr_t bd_addr, char *str);
-static void taskFunction_blinking(void *parameters);
+static void led_timer_callback(void *arg);
 
 static esp_bt_uuid_t remote_filter_service_uuid = {
     .len = ESP_UUID_LEN_16,
@@ -333,18 +336,20 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             break;
         }
         ESP_LOGI(GATTC_TAG, "write descr success ");
-        uint8_t write_char_data[35];
-        for (int i = 0; i < sizeof(write_char_data); ++i)
-        {
-            write_char_data[i] = i % 256;
-        }
-        esp_ble_gattc_write_char(gattc_if,
-                                 gl_profile_tab[PROFILE_A_APP_ID].conn_id,
-                                 gl_profile_tab[PROFILE_A_APP_ID].char_handle,
-                                 sizeof(write_char_data),
-                                 write_char_data,
-                                 ESP_GATT_WRITE_TYPE_RSP,
-                                 ESP_GATT_AUTH_REQ_NONE);
+        // No need to write characteristic with rando data
+        // Server is the one who generates the data
+        // uint8_t write_char_data[35];
+        // for (int i = 0; i < sizeof(write_char_data); ++i)
+        // {
+        //     write_char_data[i] = i % 256;
+        // }
+        // esp_ble_gattc_write_char(gattc_if,
+        //                          gl_profile_tab[PROFILE_A_APP_ID].conn_id,
+        //                          gl_profile_tab[PROFILE_A_APP_ID].char_handle,
+        //                          sizeof(write_char_data),
+        //                          write_char_data,
+        //                          ESP_GATT_WRITE_TYPE_RSP,
+        //                          ESP_GATT_AUTH_REQ_NONE);
         break;
     case ESP_GATTC_SRVC_CHG_EVT:
     {
@@ -366,6 +371,12 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
         connect = false;
         get_server = false;
         ESP_LOGI(GATTC_TAG, "ESP_GATTC_DISCONNECT_EVT, reason = %d", p_data->disconnect.reason);
+        ESP_LOGI(GATTC_TAG, "Restarting scan...");
+        scan_ret = esp_ble_gap_set_scan_params(&ble_scan_params);
+        if (scan_ret)
+        {
+            ESP_LOGE(GATTC_TAG, "set scan params error, error code = %x", scan_ret);
+        }
         break;
     default:
         break;
@@ -380,7 +391,7 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
     {
     case ESP_GAP_BLE_SCAN_PARAM_SET_COMPLETE_EVT:
     {
-        xTaskCreatePinnedToCore(&taskFunction_blinking, "Task_Blinking", 3072, NULL, uxTaskPriorityGet(NULL), NULL, 0);
+        // xTaskCreate(&taskFunction_blinking, "Task_Blinking", 2048, NULL, 5, NULL);
         uint32_t duration = BLE_SCAN_DURATION; // the unit of the duration is second
         esp_ble_gap_start_scanning(duration);
         break;
@@ -411,8 +422,13 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
             {
                 if (adv_name_len > 0)
                 {
+                    esp_timer_stop(led_timer);
                     delay_blinking = abs(scan_result->scan_rst.rssi) * 4;
-                    ESP_LOGI(GATTC_TAG, "MAC: %s | NAME: %s | RSSI: %d | Blinking delay %d ms", macdetected, adv_name, scan_result->scan_rst.rssi, delay_blinking);
+                    esp_log_buffer_char(GATTC_TAG, adv_name, adv_name_len);
+                    ESP_LOGI(GATTC_TAG, "MAC: %s", macdetected);
+                    ESP_LOGI(GATTC_TAG, "RSSI: %d | Blinking delay %d ms", scan_result->scan_rst.rssi, delay_blinking);
+                    ESP_LOGI(GATTC_TAG, "----------------------------------------------------------");
+                    esp_timer_start_periodic(led_timer, delay_blinking * 1000);
                 }
             }
 
@@ -428,8 +444,6 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                 esp_log_buffer_hex(GATTC_TAG, &scan_result->scan_rst.ble_adv[scan_result->scan_rst.adv_data_len], scan_result->scan_rst.scan_rsp_len);
             }
 #endif
-            // ESP_LOGI(GATTC_TAG, "\n");
-
             if (adv_name != NULL)
             {
                 if (strlen(remote_device_name) == adv_name_len && strncmp((char *)adv_name, remote_device_name, adv_name_len) == 0)
@@ -601,6 +615,11 @@ void app_main(void)
     gpio_reset_pin(BLINK_GPIO);
     /* Set the GPIO as a push/pull output */
     gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
+
+    const esp_timer_create_args_t led_timer_args = {
+        .callback = &led_timer_callback,
+        .name = "led"};
+    esp_timer_create(&led_timer_args, &led_timer);
 }
 
 // Function to convert esp_bd_addr_t to a string
@@ -611,19 +630,10 @@ void esp_bd_addr_to_string(esp_bd_addr_t bd_addr, char *str)
              bd_addr[3], bd_addr[4], bd_addr[5]);
 }
 
-static void taskFunction_blinking(void *parameters)
+static void led_timer_callback(void *arg)
 {
-
-    while (1)
-    {
-        if (delay_blinking > 0)
-        {
-            /* Set the GPIO level according to the state (LOW or HIGH)*/
-            gpio_set_level(BLINK_GPIO, s_led_state);
-            /* Toggle the LED state */
-            s_led_state = !s_led_state;
-            vTaskDelay(delay_blinking / portTICK_PERIOD_MS);
-        }
-    }
-    vTaskDelete(NULL);
+    /* Set the GPIO level according to the state (LOW or HIGH)*/
+    gpio_set_level(BLINK_GPIO, s_led_state);
+    /* Toggle the LED state */
+    s_led_state = !s_led_state;
 }
