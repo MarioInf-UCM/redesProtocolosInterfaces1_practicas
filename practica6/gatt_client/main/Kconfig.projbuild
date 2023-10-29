@@ -1,0 +1,44 @@
+menu "Client Configuration"
+
+    config EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP
+        bool "Dump whole adv data and scan response data in example"
+        default n
+
+    config BLE_SCAN_LE_INTERVAL
+        hex "Ble scan interval (Time = N * 0.625 msec Time Range: 2.5 msec to 10240 msec)"
+        range 0x0004 0x4000
+        default 0x1900
+    
+    config BLE_SCAN_LE_WINDOW
+        hex "The duration of the LE scan. LE_Scan_Window shall be less than or equal to LE_Scan_Interval (Time = N * 0.625 msec Time Range: 2.5 msec to 10240 msec)"
+        range 0x0004 0x4000
+        default 0x0010
+    
+    config BLE_SCAN_DURATION
+        int "Duration of a scan (s)"
+        range 60 300
+        default 60
+    
+    config BLE_SCAN_DELAY
+        int "Delay before starting new scan (s)"
+        range 10 600
+        default 30
+
+    config MAC_KNOWN_DEVICE
+        string "MAC for a known device on advertising state"
+        default "24:0a:c4:ea:28:c2"
+        help
+            Specify a MAC address for the ethernet interface in the form of
+            six hex 8-bit chars separated by colons (e.g.:
+            aa:33:cc:22:e2:c0).  The default is an empty string, which
+            means the code will make 00:00:5E:00:53:XX, where XX will be
+            random.
+    
+    config BLINK_GPIO
+        int "Blink GPIO number"
+        default 32
+        help
+            GPIO number (IOxx) to blink on and off the LED.
+            Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+
+endmenu
