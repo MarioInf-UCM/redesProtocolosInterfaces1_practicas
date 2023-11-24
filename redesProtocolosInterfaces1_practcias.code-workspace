@@ -1,25 +1,25 @@
 {
     "folders": [
         {
-            "path": "entregable1"
+            "path": "practica1"
         },
         {
-            "path": "entregable2"
+            "path": "practica2"
         },
         {
-            "path": "entregable3"
+            "path": "practica3"
         },
         {
-            "path": "entregable4y5"
+            "path": "practica4"
         },
         {
-            "path": "entregable6"
+            "path": "practica5"
         },
         {
-            "path": "."
+            "path": "practica6"
         },
         {
-            "path": ".."
+            "path": "practica7"
         }
     ],
     "settings": {
@@ -33,7 +33,8 @@
             "err.h": "c",
             "esp_mac.h": "c",
             "string.h": "c",
-            "task.h": "c"
+            "task.h": "c",
+            "esp_log.h": "c"
         }
     }
 }
